@@ -1,4 +1,4 @@
-﻿namespace RecruitmentApi.Services
+namespace RecruitmentApi.Services
 {
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
@@ -9,26 +9,50 @@
     using System.Security.Claims;
     using System.Text;
 
-    //Dto to get login data
+    /// <summary>
+    /// Represents the data required for user login, including ID, hashed password, and roles.
+    /// </summary>
     public class LoginData
     {
+        /// <summary>
+        /// Gets or sets the user's unique identifier.
+        /// </summary>
         public string Id { get; set; } = null!;
+        /// <summary>
+        /// Gets or sets the user's hashed password.
+        /// </summary>
         public string Password { get; set; } = null!;
+        /// <summary>
+        /// Gets or sets the list of roles assigned to the user.
+        /// </summary>
         public List<Role> Roles { get; set; } = new();
     }
 
+    /// <summary>
+    /// Service for generating and validating JSON Web Tokens (JWT).
+    /// </summary>
     public class JwtService
     {
         private readonly IConfiguration _config;
         private readonly AppDbContext _context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtService"/> class.
+        /// </summary>
+        /// <param name="config">The application's configuration.</param>
+        /// <param name="context">The application's database context.</param>
         public JwtService(IConfiguration config, AppDbContext context)
         {
             _config = config;
             _context = context;
         }
 
-        //Method to generate token
+        /// <summary>
+        /// Generates a JWT token for the specified email and role.
+        /// </summary>
+        /// <param name="email">The user's email address.</param>
+        /// <param name="role">The user's role.</param>
+        /// <returns>A JWT token string.</returns>
         public string GenerateToken(string email, string role)
         {
             //adding claims
@@ -53,7 +77,11 @@
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        //Get all UserId, All Roles and Hashed password
+        /// <summary>
+        /// Retrieves login data (user ID, hashed password, and roles) for a given email.
+        /// </summary>
+        /// <param name="email">The user's email address.</param>
+        /// <returns>A <see cref="LoginData"/> object if the user is found; otherwise, null.</returns>
         public async Task<LoginData?> GetLoginData(string email)
         {
             var user = await _context.Users

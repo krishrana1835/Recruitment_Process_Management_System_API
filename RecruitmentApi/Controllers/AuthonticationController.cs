@@ -19,6 +19,14 @@ namespace RecruitmentApi.Controllers
             _jwtService = jwtService;
         }
 
+        /// <summary>
+        /// Authenticates a user and returns a JWT token upon successful login.
+        /// </summary>
+        /// <param name="login">User login credentials including email, password, and role.</param>
+        /// <returns>An IActionResult containing the JWT token and user information if authentication is successful.</returns>
+        /// <response code="200">Returns the JWT token and user details.</response>
+        /// <response code="400">If the email, password, or role is invalid or missing.</response>
+        /// <response code="401">If the user is not found, password is invalid, or user does not have the specified role.</response>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto login)
         {
@@ -64,10 +72,24 @@ namespace RecruitmentApi.Controllers
 
 
     //User Login DTO
+    /// <summary>
+    /// Represents the data transfer object for user login.
+    /// </summary>
     public class UserLoginDto
     {
+        /// <summary>
+        /// Gets or sets the email of the user.
+        /// </summary>
         public string Email { get; set; } = null!;
+
+        /// <summary>
+        /// Gets or sets the password of the user.
+        /// </summary>
         public string Password { get; set; } = null!;
+
+        /// <summary>
+        /// Gets or sets the role of the user.
+        /// </summary>
         public string Role { get; set; } = null!;
     }
 

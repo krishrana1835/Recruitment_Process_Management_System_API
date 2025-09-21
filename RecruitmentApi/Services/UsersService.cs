@@ -1,36 +1,64 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
 using BCrypt.Net;
 using RecruitmentApi.Data;
 using RecruitmentApi.Models;
 using RecruitmentApi.Dtos;
+using static RecruitmentApi.Dtos.UserDtos;
 
 namespace RecruitmentApi.Services
 {
+    /// <summary>
+    /// Service for managing user-related operations.
+    /// </summary>
     public class UsersService
     {
         private AppDbContext _context;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UsersService"/> class.
+        /// </summary>
+        /// <param name="context">The application's database context.</param>
         public UsersService(AppDbContext context)
         {
             _context = context;
         }
 
-        //Get all the users information
+        /// <summary>
+        /// Gets all users.
+        /// </summary>
+        /// <returns>A list of all <see cref="User"/> objects.</returns>
         public async Task<List<User?>> GetUserAsync()
         {
             var users = await _context.Users.ToListAsync();
             return users;
         }
 
-        //Get infromation on specific user using id
+        /// <summary>
+        /// Gets information for a specific user by ID.
+        /// </summary>
+        /// <param name="id">The ID of the user.</param>
+        /// <returns>The <see cref="User"/> object for the specified ID, or null if not found.</returns>
         public async Task<User?> GetUserAsync(string id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.user_id.Equals(id));
             return user;
         }
 
-        //Get All users basic infromaation to display
+        /// <summary>
+        /// Gets the ID of the last created user.
+        /// </summary>
+        /// <returns>The user ID of the last created user, or null if no users exist.</returns>
+        public async Task<String?> GetLastUserIdAsync()
+        {
+            var user = await _context.Users.OrderByDescending(u => u.created_at).FirstOrDefaultAsync();
+            return user?.user_id;
+        }
+
+        /// <summary>
+        /// Gets basic information for all users.
+        /// </summary>
+        /// <returns>A list of <see cref="UserDtos.UserInfoDto"/> objects containing basic user information, or null if no users exist.</returns>
         public async Task<List<UserDtos.UserInfoDto>?> GetAllUserInfoAsync()
         {
             var users = await _context.Users.Include(x => x.roles).ToListAsync();
@@ -54,7 +82,11 @@ namespace RecruitmentApi.Services
             return data;
         }
 
-        //Get user infromation of specific user for user profile
+        /// <summary>
+        /// Gets detailed user profile information for a specific user.
+        /// </summary>
+        /// <param name="id">The ID of the user.</param>
+        /// <returns>A <see cref="UserDtos.UserProfileDto"/> object containing detailed user profile information, or null if the user is not found.</returns>
         public async Task<UserDtos.UserProfileDto?> GetUserProfileAsync(string id)
         {
             var data = await _context.Users.Include(r=> r.roles).Include(r => r.Candidate_Reviews).Include(r => r.Jobs).FirstOrDefaultAsync(r => r.user_id == id);
@@ -109,25 +141,96 @@ namespace RecruitmentApi.Services
             return user;
         }
 
-        //Add new user
-        public async Task<UserDtos.UserDto?> AddUserAsync(User newUser)
+        /// <summary>
+        /// Creates a new user.
+        /// </summary>
+        /// <param name="dto">The user creation data.</param>
+        /// <returns>The newly created <see cref="User"/> object.</returns>
+        /// <exception cref="Exception">Thrown if the user ID already exists.</exception>
+        public async Task<User> CreateUserAsync(UserDtos.UserCreateDto dto)
         {
-            await _context.Users.AddAsync(newUser);
-            await _context.SaveChangesAsync();
+            // Check if user already exists
+            if (await _context.Users.AnyAsync(u => u.user_id == dto.user_id))
+                throw new Exception("User ID already exists");
 
-            var user = new UserDtos.UserDto
+            // Hash password (basic example, replace with real hasher)
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.password);
+
+            var user = new User
             {
-                user_id = newUser.user_id,  
-                name = newUser.name,
-                email = newUser.email,
+                user_id = dto.user_id,
+                name = dto.name,
+                email = dto.email,
+                password_hash = hashedPassword,
+                created_at = DateTime.Now,
             };
 
+            // Attach existing roles by ID (ignore names)
+            foreach (var roleDto in dto.roles)
+            {
+                var role = await _context.Roles.FindAsync(roleDto.role_id);
+                if (role != null)
+                {
+                    user.roles.Add(role);
+                }
+            }
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
             return user;
         }
 
-        //public async Task<User?> UpdateUserAsync(User updateUser)
-        //{
 
-        //} 
+        /// <summary>
+        /// Updates an existing user.
+        /// </summary>
+        /// <param name="dto">The user update data.</param>
+        /// <returns>The updated <see cref="User"/> object.</returns>
+        /// <exception cref="Exception">Thrown if the user ID does not exist.</exception>
+        public async Task<User> UpdateUserAsync(UserDtos.UserUpdateDto dto)
+        {
+            var existingUser = await _context.Users
+                .Include(u => u.roles)
+                .FirstOrDefaultAsync(u => u.user_id == dto.user_id);
+
+            if (existingUser == null)
+                throw new Exception("User ID does not exist");
+
+            existingUser.name = dto.name;
+            existingUser.email = dto.email;
+
+            existingUser.roles.Clear();
+
+            foreach (var roleDto in dto.roles)
+            {
+                var role = await _context.Roles.FindAsync(roleDto.role_id);
+                if (role != null)
+                {
+                    existingUser.roles.Add(role);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return existingUser;
+        }
+
+        /// <summary>
+        /// Deletes a user by their ID.
+        /// </summary>
+        /// <param name="userId">The ID of the user to delete.</param>
+        /// <returns>True if the user was successfully deleted; otherwise, false.</returns>
+        /// <exception cref="Exception">Thrown if the user does not exist.</exception>
+        public async Task<bool> DeleteUserAsync(string userId)
+        {
+            var user = await _context.Users
+                .Include(u => u.roles)
+                .FirstOrDefaultAsync(u => u.user_id == userId);
+            if (user == null)
+                throw new Exception("User Does not exist");
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

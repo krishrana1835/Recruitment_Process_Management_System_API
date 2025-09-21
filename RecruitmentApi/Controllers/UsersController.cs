@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using RecruitmentApi.Dtos;
 using RecruitmentApi.Models;
 using RecruitmentApi.Services;
+using static RecruitmentApi.Dtos.UserDtos;
 
 namespace RecruitmentApi.Controllers
 {
@@ -19,6 +21,11 @@ namespace RecruitmentApi.Controllers
         }
 
         //Get all users
+        /// <summary>
+        /// Gets all users.
+        /// </summary>
+        /// <returns>A list of all users.</returns>
+        /// <response code="200">Returns a list of User objects.</response>
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<User?>> getAllUsers()
@@ -27,6 +34,12 @@ namespace RecruitmentApi.Controllers
             return Ok(users);
         }
 
+        /// <summary>
+        /// Gets a user by their ID.
+        /// </summary>
+        /// <param name="id">The ID of the user.</param>
+        /// <returns>The user with the specified ID.</returns>
+        /// <response code="200">Returns the User object.</response>
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<User?>> getUser(string id)
@@ -35,6 +48,11 @@ namespace RecruitmentApi.Controllers
             return Ok(users);
         }
 
+        /// <summary>
+        /// Gets simplified information for all users.
+        /// </summary>
+        /// <returns>A list of UserCreateDto objects containing simplified user information.</returns>
+        /// <response code="200">Returns a list of UserCreateDto objects.</response>
         [HttpGet("GetUserInfo")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<UserDtos.UserCreateDto?>> getAllUsersSmallData()
@@ -43,6 +61,14 @@ namespace RecruitmentApi.Controllers
             return Ok(users);
         }
 
+        /// <summary>
+        /// Gets the user profile for a specific user ID.
+        /// </summary>
+        /// <param name="id">The ID of the user.</param>
+        /// <returns>The user profile information.</returns>
+        /// <response code="200">Returns the UserProfileDto object.</response>
+        /// <response code="400">If the user ID is not provided.</response>
+        /// <response code="404">If no user is found with the specified ID.</response>
         [HttpGet("GetUserProfile/{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<UserDtos.UserProfileDto?>> getUserProfile(string id)
@@ -55,34 +81,84 @@ namespace RecruitmentApi.Controllers
             return Ok(user);
         }
 
-        //Add new user
-        //Uses UserCreateDto and returns UserDto
-        [HttpPost]
-        public async Task<ActionResult<UserDtos.UserDto>> addUser(UserDtos.UserCreateDto newUser)
+        /// <summary>
+        /// Gets the ID of the last created user.
+        /// </summary>
+        /// <returns>An object containing the last user ID.</returns>
+        /// <response code="200">Returns an object with the user_id property.</response>
+        [HttpGet("GetLastUserId")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<object>> GetLastUserId()
         {
-            //Check Null input
-            if (newUser == null)
-                return BadRequest("Input data required");
+            var userid = await _userService.GetLastUserIdAsync();
 
-            //Check if user is already there
-            var check = await _userService.GetUserAsync(newUser.user_id);
-            if (check != null)
-                return Conflict("User Already exist");
+            return Ok(new { user_id = userid });
+        }
 
-            //Making object of user
-            User user = new User
+        //Create user from dashboard
+        /// <summary>
+        /// Creates a new user.
+        /// </summary>
+        /// <param name="dto">The user creation data.</param>
+        /// <returns>A success message and the ID of the newly created user.</returns>
+        /// <response code="200">Returns a success message and the user ID.</response>
+        /// <response code="400">If there is an error during user creation.</response>
+        [HttpPost("AddUser")]   
+        public async Task<IActionResult> CreateUser([FromBody] UserDtos.UserCreateDto dto)
+        {
+            try
             {
-                user_id = newUser.user_id,
-                name = newUser.name,
-                email = newUser.email,
-                password_hash = BCrypt.Net.BCrypt.HashPassword(newUser.password),
-                created_at = DateTime.Now,
-            };
+                var user = await _userService.CreateUserAsync(dto);
+                return Ok(new { message = "User created", user_id = user.user_id });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-            //Adding User
-            var res = await _userService.AddUserAsync(user);
+        //Update user form dahsboard
+        /// <summary>
+        /// Updates an existing user.
+        /// </summary>
+        /// <param name="dto">The user update data.</param>
+        /// <returns>A success message and the ID of the updated user.</returns>
+        /// <response code="200">Returns a success message and the user ID.</response>
+        /// <response code="400">If there is an error during user update.</response>
+        [HttpPut("UpdateUser")]
+        public async Task<IActionResult> UpdateUser([FromBody] UserDtos.UserUpdateDto dto)
+        {
+            try
+            {
+                var user = await _userService.UpdateUserAsync(dto);
+                return Ok(new { message = "User Updated", user_id = user.user_id });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-            return CreatedAtAction(nameof(addUser), new { user.email }, res);
+        /// <summary>
+        /// Deletes a user by their ID.
+        /// </summary>
+        /// <param name="userId">The ID of the user to delete.</param>
+        /// <returns>A success message and the ID of the deleted user.</returns>
+        /// <response code="200">Returns a success message and the user ID.</response>
+        /// <response code="400">If there is an error during user deletion.</response>
+        [HttpDelete("DeleteUser/{userId}")]
+        public async Task<IActionResult> DeleteUser(string userId)
+        {
+            try
+            {
+                if (await _userService.DeleteUserAsync(userId))
+                    return Ok(new { message = "User Updated", user_id = userId });
+                else return BadRequest("Error encounterd");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
