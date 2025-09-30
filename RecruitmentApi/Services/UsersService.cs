@@ -222,6 +222,8 @@ namespace RecruitmentApi.Services
         /// <exception cref="Exception">Thrown if the user does not exist.</exception>
         public async Task<bool> DeleteUserAsync(string userId)
         {
+            if (userId == null)
+                throw new Exception("User Id can not be null value");
             var user = await _context.Users
                 .Include(u => u.roles)
                 .FirstOrDefaultAsync(u => u.user_id == userId);

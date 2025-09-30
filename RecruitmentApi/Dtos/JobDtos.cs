@@ -42,5 +42,18 @@ namespace RecruitmentApi.Dtos
             /// </summary>
             public virtual Jobs_StatusDtos.Jobs_StatusDto status { get; set; } = null!;
         }
+
+        public class JobDto_Candidate
+        {
+            /// <summary>
+            /// Gets or sets the unique identifier for the job.
+            /// </summary>
+            public int job_id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the title of the job.
+            /// </summary>
+            public string job_title { get; set; } = null!;
+        }
     }
 }

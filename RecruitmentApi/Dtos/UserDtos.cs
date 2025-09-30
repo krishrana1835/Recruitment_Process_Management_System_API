@@ -86,16 +86,16 @@ public class UserDtos
         /// <summary>
         /// Gets or sets the list of interview feedbacks for the user.
         /// </summary>
-        public List<Interview_FeedBackDtos.Interview_FeedbackDto> interview_feedbacks { get; set; } = new();
+        public List<Interview_FeedBackDtos.Interview_FeedbackDto?> interview_feedbacks { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of candidate reviews for the user.
         /// </summary>
-        public List<Candidate_ReviewDtos.Candidate_ReviewDto> candidate_reviews { get; set; } = new();
+        public List<Candidate_ReviewDtos.Candidate_ReviewDto?> candidate_reviews { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of jobs created by the user.
         /// </summary>
-        public List<JobDtos.JobDto> jobs_created { get; set; } = new();
+        public List<JobDtos.JobDto?> jobs_created { get; set; } = new();
     }
 }

@@ -23,6 +23,7 @@ namespace RecruitmentApi
             // All Services
             builder.Services.AddScoped<UsersService>();
             builder.Services.AddScoped<RoleService>();
+            builder.Services.AddScoped<CandidateService>();
 
             builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("dbConnection")));
 

@@ -17,6 +17,8 @@ public partial class Candidate
 
     public DateTime created_at { get; set; }
 
+    public string password { get; set; } = null!;
+
     public virtual ICollection<Candidate_Document> Candidate_Documents { get; set; } = new List<Candidate_Document>();
 
     public virtual ICollection<Candidate_Review> Candidate_Reviews { get; set; } = new List<Candidate_Review>();

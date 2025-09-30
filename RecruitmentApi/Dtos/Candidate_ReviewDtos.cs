@@ -1,7 +1,9 @@
-﻿/// <summary>
-    /// Represents a data transfer object for candidate reviews.
-    /// </summary>
-    public class Candidate_ReviewDtos
+﻿using RecruitmentApi.Dtos;
+
+/// <summary>
+/// Represents a data transfer object for candidate reviews.
+/// </summary>
+public class Candidate_ReviewDtos
     {
         /// <summary>
         /// Represents a single candidate review.
@@ -32,5 +34,24 @@
             /// Gets or sets the unique identifier of the job associated with the review.
             /// </summary>
             public int job_id { get; set; }
-        }
     }
+
+    public class CandidateReviewDto_Candidate
+
+    {
+        public int review_id { get; set; }
+
+        public string comments { get; set; } = null!;
+
+        public DateTime reviewed_at { get; set; }
+
+        public int job_id { get; set; }
+
+        public string user_id { get; set; } = null!;
+
+        public JobDtos.JobDto_Candidate job { get; set; }
+
+    }
+
+
+}

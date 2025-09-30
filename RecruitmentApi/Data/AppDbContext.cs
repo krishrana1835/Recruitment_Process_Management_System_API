@@ -68,6 +68,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.full_name).HasMaxLength(255);
             entity.Property(e => e.phone).HasMaxLength(20);
             entity.Property(e => e.resume_path).HasMaxLength(500);
+            entity.Property(e => e.password).HasMaxLength(255);
         });
 
         modelBuilder.Entity<Candidate_Document>(entity =>

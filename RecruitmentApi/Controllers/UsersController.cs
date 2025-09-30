@@ -146,13 +146,13 @@ namespace RecruitmentApi.Controllers
         /// <returns>A success message and the ID of the deleted user.</returns>
         /// <response code="200">Returns a success message and the user ID.</response>
         /// <response code="400">If there is an error during user deletion.</response>
-        [HttpDelete("DeleteUser/{userId}")]
-        public async Task<IActionResult> DeleteUser(string userId)
+        [HttpDelete("DeleteUser/{user_id}")]
+        public async Task<IActionResult> DeleteUser(string user_id)
         {
             try
             {
-                if (await _userService.DeleteUserAsync(userId))
-                    return Ok(new { message = "User Updated", user_id = userId });
+                if (await _userService.DeleteUserAsync(user_id))
+                    return Ok(new { message = "User Deleted", user_id = user_id });
                 else return BadRequest("Error encounterd");
             }
             catch (Exception ex)
