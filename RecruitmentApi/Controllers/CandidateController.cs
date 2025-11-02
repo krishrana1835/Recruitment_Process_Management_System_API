@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Cryptography.Pkcs;
+using Humanizer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Protocol.Plugins;
@@ -33,7 +35,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetLastCandidateId")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetLastCandidateId()
         {
             try
@@ -58,7 +60,7 @@ namespace RecruitmentApi.Controllers
         /// An <see cref="IActionResult"/> that represents the outcome of the operation.
         /// </returns>
         [HttpGet("GetCandidateProfile/{candidateId}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Reviewer")]
         public async Task<IActionResult> GetCandidateProfile(string candidateId)
         {
             try
@@ -74,6 +76,37 @@ namespace RecruitmentApi.Controllers
             
         }
 
+        [HttpGet("GetCandidateDashboardProfile/{candidateId}")]
+        [Authorize(Roles = "Candidate, Reviewer")]
+        public async Task<IActionResult> GetCandidateDashProfile(string candidateId)
+        {
+            try
+            {
+                // Call the service to fetch the candidate profile data
+                var candidateProfile = await _candidateService.GetCandidateDashProfile(candidateId);
+                return Ok(candidateProfile);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+
+        }
+
+        [HttpGet("GetResume/{candidate_id}")]
+        [Authorize(Roles = "Candidate")]
+        public async Task<IActionResult> GetCandidateResume(string candidate_id)
+        {
+            try
+            {
+                var resume_path = await _candidateService.GetCandidateResume(candidate_id);
+                return Ok(new { message = "Candidate Resume Fetched", resume_path = resume_path, success = true });
+            }catch(Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
         [HttpPost("AddCandidate")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateCandidate([FromBody] CandidateDtos.CreateCandidateDto dto)
@@ -82,6 +115,67 @@ namespace RecruitmentApi.Controllers
             {
                 var candidate = await _candidateService.CreateCandidateAsync(dto);
                 return Ok(new { message = "Candidate created", candidate_id = candidate.candidate_id });
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpPost("Register")]
+        public async Task<IActionResult> RegisterCandidate([FromBody] CandidateDtos.RegisterCandidate dto)
+        {
+            try
+            {
+                var candidate = await _candidateService.RegisterCandidateAsync(dto);
+                return Ok(new { message = "Candidate created", candidate_id = candidate.candidate_id });
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpPut("UploadResume")]
+        [Authorize(Roles = "Candidate")]
+        public async Task<IActionResult> UploadResume([FromBody] CandidateDtos.UploadCandidateResume dto)
+        {
+            try
+            {
+                var candidate = await _candidateService.UploadCandidateResumeAsync(dto);
+                return Ok(new { message = "Resume Uploaded", url = dto.resume_path });
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpPut("UpdateCandidateDashboardProfile")]
+        [Authorize(Roles = "Candidate")]
+        public async Task<IActionResult> UpdateCandidateDashProfile([FromBody] CandidateDtos.CandidateDashboardProfile candidateId)
+        {
+            try
+            {
+                // Call the service to fetch the candidate profile data
+                var candidateProfile = await _candidateService.UpdateCandidateDashProfile(candidateId);
+                return Ok(candidateProfile);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+
+        }
+
+        [HttpPut("ResetPassword")]
+        [Authorize(Roles = "Candidate")]
+        public async Task<IActionResult> ResetPassword([FromBody] CandidateDtos.ResetPasswrod dto)
+        {
+            try
+            {
+                var result = await _candidateService.ResetPasswordAsync(dto);
+                return Ok(new { message = "Candidate Password Updated", success = result});
             }
             catch (Exception ex)
             {

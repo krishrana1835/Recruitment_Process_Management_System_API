@@ -13,11 +13,41 @@ namespace RecruitmentApi.Dtos
             public string email { get; set; } = null!;
         }
 
+        public class UploadCandidateResume
+        {
+            public string candidate_id { get; set; } = null!;
+            public string resume_path { get; set; } = null!;
+
+        }
+
+        public class ResetPasswrod
+        {
+            public string candidate_id { get; set; } = null!;
+            public string password { get; set; } = null!;
+        }
+
+        public class CandidateDashboardProfile 
+        {
+            public string candidate_id { get; set; } = null!;
+
+            public string full_name { get; set; } = null!;
+
+            public string email { get; set; } = null!;
+
+            public string? phone { get; set; }
+        }
+
         public class CandidateListDto : CandidateDto
         {
             public string? phone { get; set; }
 
             public DateTime created_at { get; set; }
+        }
+
+        public class  RegisterCandidate: CandidateDto
+        {
+            public string? phone { get; set; }
+            public string password { get; set; } = null!;
         }
 
         public class CreateCandidateDto : CandidateDto

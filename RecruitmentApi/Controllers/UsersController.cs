@@ -81,6 +81,20 @@ namespace RecruitmentApi.Controllers
             return Ok(user);
         }
 
+        [HttpGet("GetUserProfileToUpdate/{id}")]
+        [Authorize(Roles = "Admin, Reviewer")]
+        public async Task<IActionResult> getUserProfileToUpdate(string id)
+        {
+            try
+            {
+                var response = await _userService.GetUserProfileToUpdate(id);
+                return Ok(response);
+            }catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
         /// <summary>
         /// Gets the ID of the last created user.
         /// </summary>
@@ -93,6 +107,35 @@ namespace RecruitmentApi.Controllers
             var userid = await _userService.GetLastUserIdAsync();
 
             return Ok(new { user_id = userid });
+        }
+
+        [HttpPut("UpdatePassword")]
+        [Authorize(Roles = "Admin, Reviewer")]
+        public async Task<IActionResult> updateUserPassword(UserDtos.UpdateUserPassword dto)
+        {
+            try
+            {
+                var response = await _userService.UpdateUserPassword(dto);
+                return Ok(new { success = response, message = "User Password Updated" });
+            }catch(Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpPut("UpdateProfile")]
+        [Authorize(Roles = "Admin, Reviewer")]
+        public async Task<IActionResult> updateUserProfile(UserDtos.UserDto dto)
+        {
+            try
+            {
+                var response = await _userService.UpdateUserProfile(dto);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         //Create user from dashboard

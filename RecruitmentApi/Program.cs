@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using RecruitmentApi.Data;
 using RecruitmentApi.Services;
+using Microsoft.Extensions.Caching.Memory;
 
 
 namespace RecruitmentApi
@@ -15,6 +16,8 @@ namespace RecruitmentApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.WebHost.UseUrls("http://0.0.0.0:5000");
+
             // Add services to the container.
             builder.Services.AddControllers();
 
@@ -24,6 +27,13 @@ namespace RecruitmentApi
             builder.Services.AddScoped<UsersService>();
             builder.Services.AddScoped<RoleService>();
             builder.Services.AddScoped<CandidateService>();
+            builder.Services.AddScoped<FileUploadService>();
+            builder.Services.AddScoped<SkillsService>();
+            builder.Services.AddScoped<JobService>();
+            builder.Services.AddScoped<Candidate_Status_HistoryService>();
+            builder.Services.AddScoped<Candidate_DocumentService>();
+
+            builder.Services.AddScoped<IResumeParserService, ResumeParserService>();
 
             builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("dbConnection")));
 
@@ -81,11 +91,12 @@ namespace RecruitmentApi
 
             app.UseCors("AllowAll");
 
+            app.UseStaticFiles();
+
             app.UseHttpsRedirection();
 
             app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapControllers();
 

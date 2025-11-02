@@ -42,6 +42,12 @@ public class UserDtos
         public List<RoleDto> roles { get; set; } = new();
     }
 
+    public class UpdateUserPassword
+    {
+        public string user_id { get; set; }
+        public string password { get; set; } = null!;
+    }
+
     /// <summary>
     /// Represents a data transfer object for updating an existing user.
     /// </summary>

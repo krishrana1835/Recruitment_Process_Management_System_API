@@ -31,7 +31,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("send")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Candidate, Reviewer")]
         public async Task<IActionResult> SendEmail([FromBody] EmailRequest request)
         {
             if (string.IsNullOrEmpty(request.ToEmail))

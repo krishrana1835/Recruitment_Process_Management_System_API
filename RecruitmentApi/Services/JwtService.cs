@@ -82,22 +82,49 @@ namespace RecruitmentApi.Services
         /// </summary>
         /// <param name="email">The user's email address.</param>
         /// <returns>A <see cref="LoginData"/> object if the user is found; otherwise, null.</returns>
-        public async Task<LoginData?> GetLoginData(string email)
+        public async Task<LoginData?> GetLoginData(string email, string role)
         {
-            var user = await _context.Users
-                .Include(u => u.roles)
-                .FirstOrDefaultAsync(u => u.email == email);
-
-            if (user == null)
-                return null;
-
-            return new LoginData
+            switch (role)
             {
-                Id = user.user_id,
-                Password = user.password_hash,
-                Roles = user.roles.ToList()
-            };
+                case "Candidate":
+                    var candidate = await _context.Candidates
+                        .FirstOrDefaultAsync(c => c.email == email);
+
+                    if (candidate == null)
+                        return null;
+
+                    return new LoginData
+                    {
+                        Id = candidate.candidate_id,
+                        Password = candidate.password,
+                        Roles = new List<Role> { new Role { role_name = "Candidate" } } // Assuming Role class
+                    };
+
+                case "Admin":
+                case "Recruiter":
+                case "HR":
+                case "Interviewer":
+                case "Reviewer":
+                case "Viewer":
+                    var user = await _context.Users
+                        .Include(u => u.roles)
+                        .FirstOrDefaultAsync(u => u.email == email);
+
+                    if (user == null)
+                        return null;
+
+                    return new LoginData
+                    {
+                        Id = user.user_id,
+                        Password = user.password_hash,
+                        Roles = user.roles.ToList()
+                    };
+
+                default:
+                    return null; // Role not recognized
+            }
         }
+
 
     }
 

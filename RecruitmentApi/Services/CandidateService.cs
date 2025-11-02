@@ -1,5 +1,6 @@
 ﻿using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using RecruitmentApi.Data;
 using RecruitmentApi.Dtos;
 using RecruitmentApi.Models;
@@ -115,7 +116,11 @@ namespace RecruitmentApi.Services
                         candidate_status_id = hist.candidate_status_id,
                         status = hist.status,
                         reason = hist.reason,
-                        changed_at = hist.changed_at
+                        changed_at = hist.changed_at,
+                        job = new JobDtos.JobTitle
+                        {
+                            job_title = hist.job.job_title
+                        }
                     }).ToList(),
 
                     Interviews = c.Interviews.Select(i => new InterviewDtos.InterviewDtos_Candidate
@@ -143,6 +148,76 @@ namespace RecruitmentApi.Services
                 throw new Exception("Candidate Does not exist");
 
             return candidateProfile;
+        }
+
+        public async Task<string> GetCandidateResume(string id)
+        {
+            if (id.IsNullOrEmpty())
+                throw new ArgumentException("Invalid candidate Id");
+
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == id);
+
+            if (candidate == null)
+                throw new Exception("Candidate not found");
+
+            string resume_path = candidate.resume_path;
+
+            return resume_path;
+        }
+
+        public async Task<CandidateDtos.CandidateDashboardProfile> GetCandidateDashProfile(string id)
+        {
+            if (id.IsNullOrEmpty())
+                throw new ArgumentException("Invalid candidate id");
+
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == id);
+
+            if (candidate == null)
+                throw new Exception("Candidate not found");
+
+            var response = new CandidateDtos.CandidateDashboardProfile
+            {
+                candidate_id = candidate.candidate_id,
+                full_name = candidate.full_name,
+                email = candidate.email,
+                phone = candidate.phone
+            };
+
+            return response;
+        }
+
+        public async Task<CandidateDtos.CandidateDashboardProfile> UpdateCandidateDashProfile(CandidateDtos.CandidateDashboardProfile dto)
+        {
+            if (dto.candidate_id.IsNullOrEmpty())
+                throw new ArgumentException("Invalid candidate id");
+
+            if(dto.email.IsNullOrEmpty() || dto.phone.IsNullOrEmpty() || dto.full_name.IsNullOrEmpty())
+                throw new ArgumentException("Invalid Input for fields");
+
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == dto.candidate_id);
+
+            if (candidate == null)
+                throw new Exception("Candidate not found");
+
+            candidate.full_name = dto.full_name;
+            candidate.email = dto.email;
+            candidate.phone = dto.phone;
+
+            await _context.SaveChangesAsync();
+
+            return dto;
+        }
+
+        public async Task<Boolean> IsRegisteredAsync(string email)
+        {
+            if (email.IsNullOrEmpty())
+                throw new ArgumentException("Invalid Email");
+
+            var data = await _context.Candidates.FirstOrDefaultAsync(r => r.email == email);
+
+            if (data != null)
+                return true;
+            return false;
         }
 
         public async Task<CandidateDtos.CreateCandidateDto> CreateCandidateAsync(CandidateDtos.CreateCandidateDto dto)
@@ -184,6 +259,85 @@ namespace RecruitmentApi.Services
             await _context.Candidates.AddAsync(candidate);
             await _context.SaveChangesAsync();
 
+            return dto;
+        }
+
+        public async Task<CandidateDtos.RegisterCandidate> RegisterCandidateAsync(CandidateDtos.RegisterCandidate dto)
+        {
+            if (dto == null)
+            {
+                throw new Exception("Null values found");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.candidate_id) ||
+                string.IsNullOrWhiteSpace(dto.full_name) ||
+                string.IsNullOrWhiteSpace(dto.email) ||
+                string.IsNullOrWhiteSpace(dto.password))
+            {
+                throw new Exception("One or more required fields are missing.");
+            }
+
+            var data = await _context.Candidates.FirstOrDefaultAsync(r => r.email == dto.email);
+
+            if (data != null)
+            {
+                throw new Exception("Email already in use");
+            }
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.password);
+
+            Candidate candidate = new Candidate
+            {
+                candidate_id = dto.candidate_id,
+                full_name = dto.full_name,
+                email = dto.email,
+                phone = dto.phone,
+                resume_path = "not provided",
+                created_at = DateTime.Now,
+                password = hashedPassword,
+            };
+
+            await _context.Candidates.AddAsync(candidate);
+            await _context.SaveChangesAsync();
+
+            return dto;
+        }
+
+        public async Task<Boolean> ResetPasswordAsync(CandidateDtos.ResetPasswrod dto)
+        {
+            if (dto.candidate_id.IsNullOrEmpty())
+                throw new ArgumentException("Invalid Candidate Id");
+            if (dto.password.IsNullOrEmpty())
+                throw new ArgumentException("Invalid Password format");
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == dto.candidate_id);
+
+            if (candidate == null)
+                throw new Exception("Candidate not found");
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.password);
+
+            candidate.password = hashedPassword;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }  
+
+        public async Task<CandidateDtos.UploadCandidateResume> UploadCandidateResumeAsync(CandidateDtos.UploadCandidateResume dto)
+        {
+            if (dto.candidate_id.IsNullOrEmpty())
+                throw new ArgumentException("Invalid candidate Id");
+
+            if (dto.resume_path.IsNullOrEmpty())
+                throw new ArgumentException("Invalid Resume path");
+
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == dto.candidate_id);
+
+            if (candidate == null)
+                throw new Exception("Candidate not found");
+
+            candidate.resume_path = dto.resume_path;
+
+            await _context.SaveChangesAsync();
             return dto;
         }
 

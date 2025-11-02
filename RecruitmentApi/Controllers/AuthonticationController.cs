@@ -39,7 +39,7 @@ namespace RecruitmentApi.Controllers
                 return BadRequest("Please select role");
 
             //Fetch Password, role and id
-            var logindata = await _jwtService.GetLoginData(login.Email);
+            var logindata = await _jwtService.GetLoginData(login.Email, login.Role);
 
             // User Exist or not
             if (logindata == null)

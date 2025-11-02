@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
 using BCrypt.Net;
@@ -6,6 +6,7 @@ using RecruitmentApi.Data;
 using RecruitmentApi.Models;
 using RecruitmentApi.Dtos;
 using static RecruitmentApi.Dtos.UserDtos;
+using Microsoft.IdentityModel.Tokens;
 
 namespace RecruitmentApi.Services
 {
@@ -89,7 +90,14 @@ namespace RecruitmentApi.Services
         /// <returns>A <see cref="UserDtos.UserProfileDto"/> object containing detailed user profile information, or null if the user is not found.</returns>
         public async Task<UserDtos.UserProfileDto?> GetUserProfileAsync(string id)
         {
-            var data = await _context.Users.Include(r=> r.roles).Include(r => r.Candidate_Reviews).Include(r => r.Jobs).FirstOrDefaultAsync(r => r.user_id == id);
+            var data = await _context.Users
+    .Include(r => r.roles)
+    .Include(r => r.Candidate_Reviews)
+    .Include(r => r.Interview_Feedbacks)
+    .Include(r => r.Jobs)
+        .ThenInclude(j => j.status) // 👈 include the status of each job
+    .FirstOrDefaultAsync(r => r.user_id == id);
+
 
             if (data == null) return null;
 
@@ -98,12 +106,15 @@ namespace RecruitmentApi.Services
                 user_id = data.user_id,
                 name = data.name,
                 email = data.email,
+
                 roles = data.roles.Select(r => new RoleDtos.RoleDto
                 {
                     role_id = r.role_id,
                     role_name = r.role_name
                 }).ToList(),
+
                 created_at = data.created_at,
+
                 interview_feedbacks = data.Interview_Feedbacks.Select(r => new Interview_FeedBackDtos.Interview_FeedbackDto
                 {
                     feedback_id = r.feedback_id,
@@ -113,6 +124,7 @@ namespace RecruitmentApi.Services
                     interview_id = r.interview_id,
                     skill_id = r.skill_id,
                 }).ToList(),
+
                 candidate_reviews = data.Candidate_Reviews.Select(r => new Candidate_ReviewDtos.Candidate_ReviewDto
                 {
                     review_id = r.review_id,
@@ -121,24 +133,90 @@ namespace RecruitmentApi.Services
                     candidate_id = r.candidate_id,
                     job_id = r.job_id,
                 }).ToList(),
-                jobs_created = data.Jobs.Select(r => new JobDtos.JobDto
+
+                jobs_created = data.Jobs?.Select(r => new JobDtos.JobDto
                 {
                     job_id = r.job_id,
                     job_title = r.job_title,
                     job_description = r.job_description,
                     created_at = r.created_at,
                     status_id = r.status_id,
-                    status = new Jobs_StatusDtos.Jobs_StatusDto
+                    status = r.status == null ? null : new Jobs_StatusDtos.Jobs_StatusDto
                     {
                         status_id = r.status.status_id,
                         status = r.status.status,
-                        reason =  r.status.reason,
+                        reason = r.status.reason,
                         changed_by = r.status.changed_by,
                         changed_at = r.status.changed_at
-                    },
-                }).ToList(),
+                    }
+                }).ToList() ?? new List<JobDtos.JobDto>(),
             };
+
             return user;
+        }
+
+        public async Task<UserDtos.UserDto> GetUserProfileToUpdate(string id)
+        {
+            if (id.IsNullOrEmpty())
+                throw new ArgumentException("Invalid user id");
+
+            var user = await _context.Users.FirstOrDefaultAsync(r => r.user_id == id);
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            var response = new UserDtos.UserDto
+            {
+                user_id = user.user_id,
+                name = user.name,
+                email = user.email
+            };
+
+            return response;
+        }
+
+        public async Task<Boolean> UpdateUserPassword(UserDtos.UpdateUserPassword dto)
+        {
+            if (dto.user_id.IsNullOrEmpty())
+                throw new ArgumentException("Invalid user id");
+
+            if (dto.password.IsNullOrEmpty())
+                throw new ArgumentException("Password field is empty");
+
+            var user = await _context.Users.FirstOrDefaultAsync(r => r.user_id == dto.user_id);
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.password);
+
+            user.password_hash = hashedPassword;
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<UserDtos.UserDto> UpdateUserProfile(UserDtos.UserDto dto)
+        {
+            if (dto.user_id.IsNullOrEmpty())
+                throw new ArgumentException("Invalid Candidate id");
+
+            if (dto.name.IsNullOrEmpty() || dto.email.IsNullOrEmpty())
+                throw new ArgumentException("One or more fields are empty");
+
+            var user = await _context.Users.FirstOrDefaultAsync(r => r.user_id == dto.user_id);
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            user.name = dto.name;
+            user.email = dto.email;
+
+            await _context.SaveChangesAsync();
+
+            return dto;
+
         }
 
         /// <summary>

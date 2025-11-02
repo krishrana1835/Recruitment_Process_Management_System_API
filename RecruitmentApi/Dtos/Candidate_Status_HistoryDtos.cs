@@ -1,4 +1,6 @@
-﻿namespace RecruitmentApi.Dtos
+﻿using RecruitmentApi.Models;
+
+namespace RecruitmentApi.Dtos
 {
     public class Candidate_Status_HistoryDtos
     {
@@ -11,6 +13,47 @@
             public string? reason { get; set; }
 
             public DateTime changed_at { get; set; }
+
+            public JobDtos.JobTitle job { get; set; } = null!;
+        }
+
+        public class JobApplicationByCandidate
+        {
+            public string candidate_id { get; set; } = null!;
+
+            public int job_id { get; set; }
+        }
+
+        public class UpdateCandidateStatusRequest
+        {
+            public string candidate_id { get; set; } = null!;
+
+            public string status { get; set; } = null!;
+
+            public int job_id { get; set; }
+
+            public string? reason { get; set; }
+
+            public string changed_by { get; set; } = null!;
+        }
+
+        public class JobApplicationStatus
+        {
+            public int candidate_status_id { get; set; }
+            public string status { get; set; } = null!;
+            public DateTime changed_at { get; set; }
+            public virtual JobDtos.ListJobStatus job { get; set; } = null!;
+        }
+
+        public class ListCandidateJobApplications
+        {
+            public virtual CandidateDtos.CandidateListDto candidate { get; set; } = null!;
+
+        }
+
+        public class JobapplicationRequest
+        {
+            public int job_id { get; set; }
         }
     }
 }

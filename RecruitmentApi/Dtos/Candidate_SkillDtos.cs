@@ -16,5 +16,10 @@ namespace RecruitmentApi.Dtos
 
             public virtual SkillDtos.SkillDto skill { get; set; } = null!;
         }
+        public class AddCandidate_SkillDto
+        {
+            public string candidate_id { get; set; } = null!;
+            public List<int> skill_ids { get; set; }
+        }
     }
 }
