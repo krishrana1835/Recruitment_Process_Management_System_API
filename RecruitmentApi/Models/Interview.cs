@@ -7,8 +7,6 @@ public partial class Interview
 {
     public int interview_id { get; set; }
 
-    public DateTime scheduled_at { get; set; }
-
     public int round_number { get; set; }
 
     public string location_or_link { get; set; } = null!;
@@ -21,7 +19,7 @@ public partial class Interview
 
     public int interview_type_id { get; set; }
 
-    public virtual ICollection<Interview_Feedback> Interview_Feedbacks { get; set; } = new List<Interview_Feedback>();
+    public string mode { get; set; } = null!;
 
     public virtual Candidate candidate { get; set; } = null!;
 
@@ -30,6 +28,8 @@ public partial class Interview
     public virtual Job job { get; set; } = null!;
 
     public virtual User scheduled_by_user { get; set; } = null!;
+
+    public virtual ICollection<Interview_Feedback> Interview_Feedbacks { get; set; } = new List<Interview_Feedback>();
 
     public virtual ICollection<User> users { get; set; } = new List<User>();
 }

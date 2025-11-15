@@ -82,7 +82,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetUserProfileToUpdate/{id}")]
-        [Authorize(Roles = "Admin, Reviewer")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter")]
         public async Task<IActionResult> getUserProfileToUpdate(string id)
         {
             try
@@ -110,7 +110,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPut("UpdatePassword")]
-        [Authorize(Roles = "Admin, Reviewer")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter")]
         public async Task<IActionResult> updateUserPassword(UserDtos.UpdateUserPassword dto)
         {
             try
@@ -124,7 +124,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPut("UpdateProfile")]
-        [Authorize(Roles = "Admin, Reviewer")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter")]
         public async Task<IActionResult> updateUserProfile(UserDtos.UserDto dto)
         {
             try
@@ -146,7 +146,8 @@ namespace RecruitmentApi.Controllers
         /// <returns>A success message and the ID of the newly created user.</returns>
         /// <response code="200">Returns a success message and the user ID.</response>
         /// <response code="400">If there is an error during user creation.</response>
-        [HttpPost("AddUser")]   
+        [HttpPost("AddUser")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateUser([FromBody] UserDtos.UserCreateDto dto)
         {
             try
@@ -169,6 +170,7 @@ namespace RecruitmentApi.Controllers
         /// <response code="200">Returns a success message and the user ID.</response>
         /// <response code="400">If there is an error during user update.</response>
         [HttpPut("UpdateUser")]
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> UpdateUser([FromBody] UserDtos.UserUpdateDto dto)
         {
             try
@@ -190,6 +192,7 @@ namespace RecruitmentApi.Controllers
         /// <response code="200">Returns a success message and the user ID.</response>
         /// <response code="400">If there is an error during user deletion.</response>
         [HttpDelete("DeleteUser/{user_id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(string user_id)
         {
             try

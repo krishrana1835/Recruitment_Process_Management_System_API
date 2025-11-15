@@ -202,38 +202,55 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Interview>(entity =>
         {
-            entity.HasKey(e => e.interview_id);
+            entity.HasKey(e => e.interview_id)
+                  .HasName("PK_Interviews");
 
             entity.Property(e => e.candidate_id)
                 .HasMaxLength(8)
                 .IsUnicode(false)
-                .IsFixedLength();
-            entity.Property(e => e.location_or_link).HasMaxLength(500);
+                .IsFixedLength()
+                .IsRequired();
+
+            entity.Property(e => e.location_or_link)
+                .HasMaxLength(1000)
+                .IsRequired();
+
+            entity.Property(e => e.mode)
+                .HasMaxLength(100)
+                .IsRequired();
+
             entity.Property(e => e.scheduled_by)
                 .HasMaxLength(8)
                 .IsUnicode(false)
-                .IsFixedLength();
+                .IsFixedLength()
+                .IsRequired();
 
-            entity.HasOne(d => d.candidate).WithMany(p => p.Interviews)
+            // Foreign key relationships
+            entity.HasOne(d => d.candidate)
+                .WithMany(p => p.Interviews)
                 .HasForeignKey(d => d.candidate_id)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_Interviews_Candidates");
 
-            entity.HasOne(d => d.interview_type).WithMany(p => p.Interviews)
+            entity.HasOne(d => d.interview_type)
+                .WithMany(p => p.Interviews)
                 .HasForeignKey(d => d.interview_type_id)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_Interviews_Interview_Type");
 
-            entity.HasOne(d => d.job).WithMany(p => p.Interviews)
+            entity.HasOne(d => d.job)
+                .WithMany(p => p.Interviews)
                 .HasForeignKey(d => d.job_id)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_Interviews_Jobs");
 
-            entity.HasOne(d => d.scheduled_by_user).WithMany(p => p.ScheduledInterviews)
+            entity.HasOne(d => d.scheduled_by_user)
+                .WithMany(p => p.ScheduledInterviews)
                 .HasForeignKey(d => d.scheduled_by)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_Interviews_Users");
         });
+
 
         modelBuilder.Entity<Interview_Feedback>(entity =>
         {

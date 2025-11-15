@@ -1,152 +1,133 @@
-﻿//using RecruitmentApi.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using RecruitmentApi.Data;
+using RecruitmentApi.Models;
 
-//namespace RecruitmentApi.Services
-//{
-//    public class SheduleInterviewService
-//    {
-//        public readonly AppDbContext _context;
+namespace RecruitmentApi.Services
+{
+    public class SheduleInterviewService
+    {
+        private readonly AppDbContext _context;
 
-//        public SheduleInterviewService(AppDbContext context)
-//        {
-//            _context = context;
-//        }
+        public SheduleInterviewService(AppDbContext context)
+        {
+            _context = context;
+        }
 
-//        public class ScheduleInterviewRequestDto
-//        {
-//            public int job_id { get; set; }
-//            public int round_number { get; set; }
-//            public DateTime ScheduledStartTime { get; set; }
-//            public int DurationPerInterview { get; set; }
-//            public List<string> Candidates { get; set; } = new();
-//            public List<List<string>> Interviewers { get; set; } = new();
-//        }
+        // ----------------- DTOs -----------------
+        public class ScheduleInterviewRequestDto
+        {
+            public int job_id { get; set; }
+            public int round_number { get; set; }
+            public DateTime scheduled_start_time { get; set; }
+            public int duration_per_interview { get; set; }
+            public List<string> candidates { get; set; } = new();
+            public List<List<string>> interviewers { get; set; } = new();
+            public string scheduled_by { get; set; } = string.Empty;
+            public string location_or_link { get; set; } = "TBD";
+            public int interview_type_id { get; set; } = 1;
+        }
 
-//        public class ScheduleInterviewResponseDto
-//        {
-//            public string CandidateId { get; set; } = string.Empty;
-//            public int RoundNumber { get; set; }
-//            public int JobId { get; set; }
-//            public string Mode { get; set; } = string.Empty;
-//            public string StartTime { get; set; } = string.Empty;
-//            public string EndTime { get; set; } = string.Empty;
-//            public List<string> AssignedInterviewers { get; set; } = new();
-//            public string Status { get; set; } = "Scheduled";
-//        }
-//        public class AssignmentRecord
-//        {
-//            public int AssignmentId { get; set; }
-//            public string InterviewerId { get; set; } = string.Empty;
-//            public int PanelId { get; set; }
-//        }
+        public class ScheduleInterviewResponseDto
+        {
+            public string candidate_id { get; set; } = string.Empty;
+            public int round_number { get; set; }
+            public int job_id { get; set; }
+            public string mode { get; set; } = string.Empty;
+            public string start_time { get; set; } = string.Empty;
+            public string end_time { get; set; } = string.Empty;
+            public List<string> assigned_interviewers { get; set; } = new();
+            public string status { get; set; } = "Scheduled";
+        }
 
-//        public class InterviewRecord
-//        {
-//            public string CandidateId { get; set; } = string.Empty;
-//            public int JobId { get; set; }
-//            public int RoundId { get; set; }
-//            public DateTime StartTime { get; set; }
-//            public DateTime EndTime { get; set; }
-//            public int PanelId { get; set; }
-//            public string Mode { get; set; } = string.Empty;
-//            public string Status { get; set; } = "Scheduled";
-//        }
+        // ----------------- Core Logic -----------------
+        public List<ScheduleInterviewResponseDto> ScheduleInterviews(ScheduleInterviewRequestDto request)
+        {
+            var results = new List<ScheduleInterviewResponseDto>();
 
+            // Sort panels: Offline first, then Online
+            var interviewers_sorted = request.interviewers
+                .OrderBy(panel => panel.Last().Equals("Offline", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                .ToList();
 
-//        public class InterviewSchedulerService
-//        {
-//            private readonly List<InterviewRecord> _interviews = new();
-//            private readonly List<AssignmentRecord> _assignments = new();
+            int panels = interviewers_sorted.Count;
+            int total_candidates = request.candidates.Count;
+            int total_slots = (int)Math.Ceiling(total_candidates / (double)panels);
 
-//            public List<ScheduleInterviewResponseDto> ScheduleInterviews(ScheduleInterviewRequestDto request)
-//            {
-//                var results = new List<ScheduleInterviewResponseDto>();
+            int candidate_index = 0;
 
-//                // Sort panels: Offline first, then Online
-//                var interviewersSorted = request.Interviewers
-//                    .OrderBy(panel => panel.Last().Equals("Offline", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
-//                    .ToList();
+            for (int slot = 0; slot < total_slots; slot++)
+            {
+                var start_time = request.scheduled_start_time.AddMinutes(slot * request.duration_per_interview);
+                var end_time = start_time.AddMinutes(request.duration_per_interview);
 
-//                int panels = interviewersSorted.Count;
-//                int totalCandidates = request.Candidates.Count;
-//                int totalSlots = (int)Math.Ceiling(totalCandidates / (double)panels);
+                for (int panel_id = 0; panel_id < panels; panel_id++)
+                {
+                    if (candidate_index >= total_candidates)
+                        break;
 
-//                int candidateIndex = 0;
+                    string candidate_id = request.candidates[candidate_index];
+                    var panel = interviewers_sorted[panel_id];
+                    var panel_members = panel.Take(panel.Count - 1).ToList();
+                    string mode = panel.Last();
 
-//                for (int slot = 0; slot < totalSlots; slot++)
-//                {
-//                    var startTime = request.ScheduledStartTime.AddMinutes(slot * request.DurationPerInterview);
-//                    var endTime = startTime.AddMinutes(request.DurationPerInterview);
+                    // Check if interview already exists (reschedule)
+                    var existing = _context.Interviews
+                        .FirstOrDefault(i =>
+                            i.candidate_id == candidate_id &&
+                            i.job_id == request.job_id &&
+                            i.round_number == request.round_number);
 
-//                    for (int panelId = 0; panelId < panels; panelId++)
-//                    {
-//                        if (candidateIndex >= totalCandidates)
-//                            break;
+                    string status;
 
-//                        string candidateId = request.Candidates[candidateIndex];
-//                        var panel = interviewersSorted[panelId];
-//                        var panelMembers = panel.Take(panel.Count - 1).ToList();
-//                        string mode = panel.Last();
+                    if (existing != null)
+                    {
+                        existing.mode = mode;
+                        existing.location_or_link = request.location_or_link;
+                        existing.scheduled_by = request.scheduled_by;
+                        existing.interview_type_id = request.interview_type_id;
+                        existing.round_number = request.round_number;
+                        existing.job_id = request.job_id;
 
-//                        // Check if interview exists (reschedule case)
-//                        var existing = _interviews.FirstOrDefault(i =>
-//                            i.CandidateId == candidateId &&
-//                            i.JobId == request.JobId &&
-//                            i.RoundId == request.RoundId);
+                        status = "Rescheduled";
+                        _context.Interviews.Update(existing);
+                    }
+                    else
+                    {
+                        var new_interview = new Interview
+                        {
+                            round_number = request.round_number,
+                            location_or_link = request.location_or_link,
+                            candidate_id = candidate_id,
+                            job_id = request.job_id,
+                            scheduled_by = request.scheduled_by,
+                            interview_type_id = request.interview_type_id,
+                            mode = mode
+                        };
 
-//                        InterviewRecord interview;
-//                        if (existing != null)
-//                        {
-//                            existing.StartTime = startTime;
-//                            existing.EndTime = endTime;
-//                            existing.Status = "Rescheduled";
-//                            existing.PanelId = panelId + 1;
-//                            existing.Mode = mode;
-//                            interview = existing;
-//                        }
-//                        else
-//                        {
-//                            interview = new InterviewRecord
-//                            {
-//                                CandidateId = candidateId,
-//                                JobId = request.JobId,
-//                                RoundId = request.RoundId,
-//                                StartTime = startTime,
-//                                EndTime = endTime,
-//                                PanelId = panelId + 1,
-//                                Mode = mode,
-//                                Status = "Scheduled"
-//                            };
-//                            _interviews.Add(interview);
-//                        }
+                        _context.Interviews.Add(new_interview);
+                        status = "Scheduled";
+                    }
 
-//                        // Assign interviewers to panel
-//                        foreach (var iid in panelMembers)
-//                        {
-//                            _assignments.Add(new AssignmentRecord
-//                            {
-//                                AssignmentId = _assignments.Count + 1,
-//                                InterviewerId = iid,
-//                                PanelId = panelId + 1
-//                            });
-//                        }
+                    results.Add(new ScheduleInterviewResponseDto
+                    {
+                        candidate_id = candidate_id,
+                        round_number = request.round_number,
+                        job_id = request.job_id,
+                        mode = mode,
+                        start_time = start_time.ToString("yyyy-MM-dd HH:mm"),
+                        end_time = end_time.ToString("yyyy-MM-dd HH:mm"),
+                        assigned_interviewers = panel_members,
+                        status = status
+                    });
 
-//                        results.Add(new ScheduleInterviewResponseDto
-//                        {
-//                            CandidateId = candidateId,
-//                            RoundNumber = request.RoundId,
-//                            JobId = request.JobId,
-//                            Mode = mode,
-//                            StartTime = startTime.ToString("yyyy-MM-dd HH:mm"),
-//                            EndTime = endTime.ToString("yyyy-MM-dd HH:mm"),
-//                            AssignedInterviewers = panelMembers,
-//                            Status = interview.Status
-//                        });
+                    candidate_index++;
+                }
+            }
 
-//                        candidateIndex++;
-//                    }
-//                }
-
-//                return results;
-//            }
-//        }
-//}
+            //_context.SaveChanges();
+            return results;
+        }
+    }
+}

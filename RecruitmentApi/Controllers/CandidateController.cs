@@ -20,7 +20,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetCandidateList")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Recruiter")]
         public async Task<IActionResult> getListOfCandidates()
         {
             try
@@ -35,7 +35,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetLastCandidateId")]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Recruiter")]
         public async Task<IActionResult> GetLastCandidateId()
         {
             try
@@ -60,7 +60,7 @@ namespace RecruitmentApi.Controllers
         /// An <see cref="IActionResult"/> that represents the outcome of the operation.
         /// </returns>
         [HttpGet("GetCandidateProfile/{candidateId}")]
-        [Authorize(Roles = "Admin, Reviewer")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter")]
         public async Task<IActionResult> GetCandidateProfile(string candidateId)
         {
             try
@@ -108,7 +108,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("AddCandidate")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Recruiter")]
         public async Task<IActionResult> CreateCandidate([FromBody] CandidateDtos.CreateCandidateDto dto)
         {
             try
@@ -184,7 +184,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("AddBulkCandidate")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Recruiter")]
         public async Task<IActionResult> AddBulkCandidate([FromBody] CandidateDtos.CreateCandidateDto[] dtos)
         {
             try
@@ -203,7 +203,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPut("UpdateBulkCandidate")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Recruiter")]
         public async Task<IActionResult> UpdateBulkCandidate([FromBody] CandidateDtos.UpdateCandidateDto[] dtos)
         {
             try
@@ -222,7 +222,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpDelete("DeleteBulkCandidate")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Recruiter")]
         public async Task<IActionResult> DeleteBulkCandidate([FromBody] CandidateDtos.DeleteCandidateDto[] dtos)
         {
             try
@@ -241,7 +241,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpDelete("DeleteCandidate/{candidate_id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Recruiter")]
         public async Task<IActionResult> DeleteUser(String candidate_id)
         {
             try

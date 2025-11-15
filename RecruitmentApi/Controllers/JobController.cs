@@ -17,7 +17,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Candidate,Reviewer")]
+        [Authorize(Roles = "Admin,Candidate,Reviewer, Recruiter")]
         public async Task<IActionResult> getAllJobs()
         {
             try
@@ -37,7 +37,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("{job_id:int}")]
-        [Authorize(Roles = "Admin,Candidate, Reviewer")]
+        [Authorize(Roles = "Admin,Candidate, Reviewer, Recruiter")]
         public async Task<IActionResult> getJob(int job_id)
         {
             try
@@ -56,7 +56,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Recruiter,Recruiter")]
         public async Task<IActionResult> createNewJob([FromBody] JobDtos.CreateJobDto dto)
         {
             try
@@ -75,7 +75,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Recruiter")]
         public async Task<IActionResult> UpdateJob([FromBody] JobDtos.UpdateJobDto dto)
         {
             try
@@ -94,7 +94,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpDelete("{job_id:int}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Recruiter")]
         public async Task<IActionResult> DeleteJob(int job_id)
         {
             try
