@@ -33,6 +33,7 @@ namespace RecruitmentApi
             builder.Services.AddScoped<Candidate_Status_HistoryService>();
             builder.Services.AddScoped<Candidate_DocumentService>();
             builder.Services.AddScoped<SheduleInterviewService>();
+            builder.Services.AddScoped<Interview_TypeService>();
 
             builder.Services.AddScoped<IResumeParserService, ResumeParserService>();
 

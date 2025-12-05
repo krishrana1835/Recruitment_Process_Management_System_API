@@ -48,6 +48,12 @@ public class UserDtos
         public string password { get; set; } = null!;
     }
 
+    public class InterviewerInfo
+    {
+        public string user_id { get; set; }
+        public string name { get; set; } = null!;
+    }
+
     /// <summary>
     /// Represents a data transfer object for updating an existing user.
     /// </summary>

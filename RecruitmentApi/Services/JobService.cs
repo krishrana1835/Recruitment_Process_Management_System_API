@@ -31,6 +31,7 @@ namespace RecruitmentApi.Services
                     job_title = s.job_title,
                     created_at  = s.created_at,
                     status_id = s.status_id,
+                    scheduled = s.scheduled,
                     status = new Jobs_StatusDtos.ListAllJobs
                     {
                         status_id = s.status_id,
@@ -105,9 +106,7 @@ namespace RecruitmentApi.Services
             if (string.IsNullOrWhiteSpace(dto.created_by))
                 throw new ArgumentException("Created By field is required.");
 
-            var user = await _context.Users.FirstOrDefaultAsync(r => r.user_id == dto.created_by);
-            if (user == null)
-                throw new Exception("User not found");
+            var user = await _context.Users.FirstOrDefaultAsync(r => r.user_id == dto.created_by) ?? throw new Exception("User not found");
 
             var jobStatus = new Jobs_Status
             {
@@ -123,7 +122,8 @@ namespace RecruitmentApi.Services
                 job_description = dto.job_description,
                 created_at = DateTime.UtcNow,
                 created_by = dto.created_by,
-                status = jobStatus
+                status = jobStatus,
+                scheduled = "Pending"
             };
 
             _context.Jobs.Add(jobEntity);

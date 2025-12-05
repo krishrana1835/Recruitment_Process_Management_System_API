@@ -300,6 +300,8 @@ public partial class AppDbContext : DbContext
                 .IsUnicode(false)
                 .IsFixedLength();
             entity.Property(e => e.job_title).HasMaxLength(255);
+            entity.Property(e => e.scheduled).HasMaxLength(50).HasDefaultValue("Pending");
+
 
             entity.HasOne(d => d.created_by_user).WithMany(p => p.Jobs)
                 .HasForeignKey(d => d.created_by)

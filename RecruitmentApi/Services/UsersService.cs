@@ -155,6 +155,20 @@ namespace RecruitmentApi.Services
             return user;
         }
 
+        public async Task<List<UserDtos.InterviewerInfo>> GetInterviewers()
+        {
+            var data = await _context.Users.Include(r => r.roles).Where(r => r.roles.Any(r => r.role_name == "Interviewer" || r.role_name == "HR")).ToListAsync();
+            if (data == null)
+                return [];
+            var response = data.Select(r => new UserDtos.InterviewerInfo
+            {
+                user_id = r.user_id,
+                name = r.name,
+            }).ToList();
+
+            return response;
+        } 
+
         public async Task<UserDtos.UserDto> GetUserProfileToUpdate(string id)
         {
             if (id.IsNullOrEmpty())

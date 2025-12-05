@@ -61,6 +61,29 @@ namespace RecruitmentApi.Controllers
             return Ok(users);
         }
 
+        [HttpGet("GetInterviewers")]
+        [Authorize(Roles = "Admin, Recruiter, Interviewer")]
+        public async Task<IActionResult> getInterviewers()
+        {
+            try
+            {
+                var response = await _userService.GetInterviewers();
+                return Ok(new
+                {
+                    success = true,
+                    message = "All Interviewers are fetched successfuly",
+                    data = response
+                });
+            }catch(Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message,
+                });
+            }
+        }
+
         /// <summary>
         /// Gets the user profile for a specific user ID.
         /// </summary>
@@ -82,7 +105,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetUserProfileToUpdate/{id}")]
-        [Authorize(Roles = "Admin, Reviewer, Recruiter")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter, Interviewer")]
         public async Task<IActionResult> getUserProfileToUpdate(string id)
         {
             try
@@ -110,7 +133,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPut("UpdatePassword")]
-        [Authorize(Roles = "Admin, Reviewer, Recruiter")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter, Interviewer")]
         public async Task<IActionResult> updateUserPassword(UserDtos.UpdateUserPassword dto)
         {
             try

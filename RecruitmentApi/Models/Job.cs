@@ -17,6 +17,8 @@ public partial class Job
 
     public int status_id { get; set; }
 
+    public string scheduled { get; set; } = null!;
+
     public virtual ICollection<Candidate_Review> Candidate_Reviews { get; set; } = new List<Candidate_Review>();
 
     public virtual ICollection<Candidate_Status_History> Candidate_Status_Histories { get; set; } = new List<Candidate_Status_History>();

@@ -87,6 +87,9 @@ namespace RecruitmentApi.Dtos
             /// <summary>
             /// Gets or sets the status of the job.
             /// </summary>
+            /// 
+
+            public string scheduled { get; set; } = null!;
             public virtual Jobs_StatusDtos.ListAllJobs status { get; set; } = null!;
         }
 

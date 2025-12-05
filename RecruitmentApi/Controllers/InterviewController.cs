@@ -18,20 +18,17 @@ namespace RecruitmentApi.Controllers
         /// Schedule or reschedule interviews for a specific job and round.
         /// </summary>
         [HttpPost("schedule")]
-        public IActionResult ScheduleInterviews([FromBody] SheduleInterviewService.ScheduleInterviewRequestDto request)
+        public async  Task<IActionResult> ScheduleInterviews([FromBody] SheduleInterviewService.ScheduleInterviewRequestDto request)
         {
             if (request == null)
                 return BadRequest(new { message = "Invalid request body." });
-
-            if (request.candidates == null || request.candidates.Count == 0)
-                return BadRequest(new { message = "Candidates list cannot be empty." });
 
             if (request.interviewers == null || request.interviewers.Count == 0)
                 return BadRequest(new { message = "Interviewers list cannot be empty." });
 
             try
             {
-                var result = _scheduleService.ScheduleInterviews(request);
+                var result = await _scheduleService.ScheduleInterviews(request);
                 return Ok(new
                 {
                     success = true,
@@ -39,8 +36,13 @@ namespace RecruitmentApi.Controllers
                     data = result
                 });
             }
+            catch(NullReferenceException ex)
+            {
+                return NotFound(new { success = false, message = "An error occurred while scheduling interviews." , error = ex.Message});
+            }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 return StatusCode(500, new
                 {
                     success = false,
