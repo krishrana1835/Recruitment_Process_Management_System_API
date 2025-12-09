@@ -329,7 +329,10 @@ namespace RecruitmentApi.Migrations
                     job_id = table.Column<int>(type: "int", nullable: false),
                     scheduled_by = table.Column<string>(type: "char(8)", unicode: false, fixedLength: true, maxLength: 8, nullable: false),
                     interview_type_id = table.Column<int>(type: "int", nullable: false),
-                    mode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                    mode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    start_time = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "(getdate())"),
+                    end_time = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "(getdate())"),
+                    status = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                 },
                 constraints: table =>
                 {

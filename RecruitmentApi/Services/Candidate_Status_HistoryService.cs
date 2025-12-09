@@ -92,6 +92,29 @@ namespace RecruitmentApi.Services
             return response;
         }
 
+        public async Task<List<JobDtos.ListJobTitle>?> GetAppliedJobs(string candidate_id)
+        {
+            if (candidate_id.IsNullOrEmpty())
+                throw new ArgumentException("Invalid Candidate Id");
+
+            var candidate = await _context.Candidates.AnyAsync(r => r.candidate_id == candidate_id);
+            if (!candidate)
+                throw new NullReferenceException("Candidate not found");
+
+            var response = await _context.Candidate_Status_Histories
+                             .Where(r => r.candidate_id == candidate_id)
+                             .Select(r => new JobDtos.ListJobTitle
+                             {
+                                 job_id = r.job.job_id,
+                                 job_title = r.job.job_title,
+                                 sheduled = r.job.scheduled
+                             })
+                             .Distinct()
+                             .ToListAsync();
+
+            return response;
+        }
+
         public async Task<Boolean> ApplyForJobAsync(Candidate_Status_HistoryDtos.JobApplicationByCandidate dto)
         {
             if (dto.candidate_id.IsNullOrEmpty())
@@ -189,8 +212,7 @@ namespace RecruitmentApi.Services
             var jobExists = await _context.Jobs.AnyAsync(r => r.job_id == job_id);
             if (!jobExists)
                 throw new Exception("Job not found");
-
-            // Step 1: Subquery to get latest changed_at per candidate
+            
             var latestStatus = _context.Candidate_Status_Histories
                 .Where(r => r.job_id == job_id)
                 .GroupBy(r => r.candidate_id)
@@ -200,7 +222,6 @@ namespace RecruitmentApi.Services
                     LatestChangedAt = g.Max(r => r.changed_at)
                 });
 
-            // Step 2: Join back to fetch latest record for each candidate
             var appliedCandidates = await _context.Candidate_Status_Histories
                 .Include(r => r.candidate)
                 .Join(

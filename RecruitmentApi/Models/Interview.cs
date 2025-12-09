@@ -21,6 +21,12 @@ public partial class Interview
 
     public string mode { get; set; } = null!;
 
+    public DateTime start_time { get; set; }
+
+    public DateTime end_time { get; set; }
+
+    public string status { get; set; } = null!;
+
     public virtual Candidate candidate { get; set; } = null!;
 
     public virtual Interview_Type interview_type { get; set; } = null!;

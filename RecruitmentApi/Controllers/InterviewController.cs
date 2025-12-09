@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using RecruitmentApi.Dtos;
 using RecruitmentApi.Services;
 
 namespace RecruitmentApi.Controllers
@@ -18,7 +20,8 @@ namespace RecruitmentApi.Controllers
         /// Schedule or reschedule interviews for a specific job and round.
         /// </summary>
         [HttpPost("schedule")]
-        public async  Task<IActionResult> ScheduleInterviews([FromBody] SheduleInterviewService.ScheduleInterviewRequestDto request)
+        [Authorize(Roles = "Admin, Recruiter")]
+        public async Task<IActionResult> ScheduleInterviews([FromBody] SheduleInterviewService.ScheduleInterviewRequestDto request)
         {
             if (request == null)
                 return BadRequest(new { message = "Invalid request body." });
@@ -36,9 +39,9 @@ namespace RecruitmentApi.Controllers
                     data = result
                 });
             }
-            catch(NullReferenceException ex)
+            catch (NullReferenceException ex)
             {
-                return NotFound(new { success = false, message = "An error occurred while scheduling interviews." , error = ex.Message});
+                return NotFound(new { success = false, message = "An error occurred while scheduling interviews.", error = ex.Message });
             }
             catch (Exception ex)
             {
@@ -47,6 +50,254 @@ namespace RecruitmentApi.Controllers
                 {
                     success = false,
                     message = "An error occurred while scheduling interviews.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("InterviewRounds/{job_id}")]
+        [Authorize(Roles = "Admin, Recruiter, Interviewer")]
+        public async Task<IActionResult> fetchRounds(int job_id)
+        {
+            try
+            {
+                var response = await _scheduleService.FetchInterviewRounds(job_id);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Rounds fetch Successfully!",
+                    data = response
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new { success = false, message = "An error occurred while fetching rounds", error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while fetching rounds.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("CandidateInterviewSchedule")]
+        [Authorize(Roles = "Admin, Recruiter")]
+        public async Task<IActionResult> fetchCandidateShedule(InterviewDtos.ListCandidateSheduleReq req)
+        {
+            try
+            {
+                var res = await _scheduleService.FetchCandidateInterviewShedule(req);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Candidate Shedule successfully fetched",
+                    data = res
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "An error occurred while fetching candidate interview shcedule.",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while fetching candidate intreview schedule.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("CandidateInterviewSchedule/Interviewer")]
+        [Authorize(Roles = "Admin, Interviewer")]
+        public async Task<IActionResult> fetchCandidateSheduleInterviewer(InterviewDtos.ListCandidateSheduleReq req)
+        {
+            try
+            {
+                var res = await _scheduleService.FetchCandidateInterviewSheduleByInterviewer(req);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Candidate Shedule successfully fetched",
+                    data = res
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "An error occurred while fetching candidate interview shcedule.",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while fetching candidate intreview schedule.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("CandidateInterview")]
+        [Authorize(Roles = "Admin, Recruiter, Candidate")]
+        public async Task<IActionResult> fetchCandidateInterviews([FromBody] InterviewDtos.CandidateInterviewReq req)
+        {
+            try
+            {
+                var res = await _scheduleService.FetchCandidateInterview(req);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Candidate Interview Schedule fetched successfully.",
+                    data = res
+                });
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "An error occurred while fetching candidate interview shcedule.",
+                    error = ex.Message
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "An error occurred while fetching candidate interview shcedule.",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while fetching candidate intreview schedule.",
+                    error = ex.Message
+                });
+            }
+
+        }
+
+
+        [HttpDelete("DeleteCandidateInterview/{interview_id}")]
+        [Authorize(Roles = "Admin, Recruiter")]
+        public async Task<IActionResult> deleteCandiateInterview(int interview_id)
+        {
+            try
+            {
+                var res = await _scheduleService.DeleteCandidateInterview(interview_id);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Candidate Interview Deleted Successfully!",
+                    data = res
+                });
+            }
+            catch(NullReferenceException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "An error occurred while deleting candidate interview.",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while deleting candidate intreview.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpPut("UpdateCandidateSchedule")]
+        [Authorize(Roles = "Admin, Recruiter, Interviewer")]
+        public async Task<IActionResult> updateCandidateSchedule(InterviewDtos.UpdateCandidateScheduleReq req)
+        {
+            try
+            {
+                var res = await _scheduleService.UpdateCandidateSchedule(req);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Candidate Schedule updated successfully!",
+                    data = res
+                });
+            }
+            catch(ArgumentNullException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "An error occured while updating caniddate schedule.",
+                    error = ex.Message
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "An error occured while updating caniddate schedule.",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured while updating caniddate schedule.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpDelete("InterviewRound")]
+        [Authorize(Roles = "Admin, Recruiter")]
+        public async Task<IActionResult> deleteRounds(InterviewDtos.DeleteSheduleReq req)
+        {
+            try
+            {
+                var response = await _scheduleService.DeleteInterviewSchedule(req);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Round Deleted Successfully!",
+                    data = response
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new { success = false, message = "An error occurred while deleting.", error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while deleting round",
                     error = ex.Message
                 });
             }

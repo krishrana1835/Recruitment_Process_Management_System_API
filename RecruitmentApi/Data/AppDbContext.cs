@@ -225,6 +225,16 @@ public partial class AppDbContext : DbContext
                 .IsFixedLength()
                 .IsRequired();
 
+            entity.Property(e => e.start_time)
+                .IsRequired();
+
+            entity.Property(e => e.end_time)
+            .IsRequired();
+
+            entity.Property(e => e.status)
+            .HasMaxLength(100)
+            .IsRequired();
+
             // Foreign key relationships
             entity.HasOne(d => d.candidate)
                 .WithMany(p => p.Interviews)

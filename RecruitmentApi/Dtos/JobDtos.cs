@@ -123,6 +123,13 @@ namespace RecruitmentApi.Dtos
             public virtual Jobs_StatusDtos.ListJobStatus status { get; set; } = null!;
         }
 
+        public class ListJobTitle
+        {
+            public int job_id { get; set; }
+            public string job_title { get; set; } = null!;
+            public string sheduled { get; set; } = null!;
+        }
+
         public class JobTitle
         {
             public string job_title { get; set; } = null!;

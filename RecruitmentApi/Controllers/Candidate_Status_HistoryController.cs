@@ -32,6 +32,49 @@ namespace RecruitmentApi.Controllers
             }
         }
 
+        [HttpGet("GetAppliedJobs/{candidate_id}")]
+        [Authorize(Roles = "Candidate, Admin")]
+        public async Task<IActionResult> getAppliedJobs(string candidate_id)
+        {
+            try
+            {
+                var res = await _service.GetAppliedJobs(candidate_id);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Applied jobs by candidate fetched successfully",
+                    data = res
+                });
+            }
+            catch(ArgumentNullException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "An error occured while fetching applied jobs",
+                    error = ex.Message
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "An error occured while fetching applied jobs",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured while fetching applied jobs",
+                    error = ex.Message
+                });
+            }
+        }
+
         [HttpPost("UpdateCandidateStatus")]
         [Authorize(Roles = "Admin, Reviewer")]
         public async Task<IActionResult> updateCandidateStatus([FromBody] Candidate_Status_HistoryDtos.UpdateCandidateStatusRequest dto)
