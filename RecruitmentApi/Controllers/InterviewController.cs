@@ -84,6 +84,39 @@ namespace RecruitmentApi.Controllers
             }
         }
 
+        [HttpGet("JobSkills/{job_id}")]
+        [Authorize(Roles = "Admin, Interviewer")]
+        public async Task<IActionResult> fetchJobSkills(int job_id)
+        {
+            try
+            {
+                var response = await _scheduleService.FetchJobSkills(job_id);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Job Skills fetched Successfully!",
+                    data = response
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new 
+                {
+                    success = false,
+                    message = "An error occurred while fetching job skills",
+                    error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while fetching job skills.",
+                    error = ex.Message
+                });
+            }
+        }
+
         [HttpPost("CandidateInterviewSchedule")]
         [Authorize(Roles = "Admin, Recruiter")]
         public async Task<IActionResult> fetchCandidateShedule(InterviewDtos.ListCandidateSheduleReq req)

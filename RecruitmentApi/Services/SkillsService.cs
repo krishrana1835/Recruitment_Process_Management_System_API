@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using RecruitmentApi.Data;
 using RecruitmentApi.Dtos;
 using RecruitmentApi.Models;
@@ -29,6 +30,64 @@ namespace RecruitmentApi.Services
                 skill_name = r.skill_name,
             }).ToList();
             return skillsdata;
+        }
+
+        public async Task<List<SkillDtos.SkillDto>> addSkills(string skill)
+        {
+            if(skill.IsNullOrEmpty())
+                throw new ArgumentException("Invalid input");
+
+            var skills = await _context.Skills.AnyAsync(s => s.skill_name == skill);
+
+            if (skills)
+                throw new InvalidOperationException("Skill already exist");
+
+            var data = new Skill
+            {
+                skill_name = skill,
+            };
+
+            await _context.Skills.AddAsync(data);
+            await _context.SaveChangesAsync();
+
+            var response = await _context.Skills.Select(r => new SkillDtos.SkillDto
+            {
+                skill_id = r.skill_id,
+                skill_name = r.skill_name,
+            }).ToListAsync();
+
+            return response;
+
+        }
+
+        public async Task<SkillDtos.SkillDto> updateSkill(SkillDtos.SkillDto req)
+        {
+            if (req.skill_name.IsNullOrEmpty())
+                throw new ArgumentException("Skill name is empty");
+
+            var skill = await _context.Skills.FirstOrDefaultAsync(i => i.skill_id == req.skill_id);
+            if(skill==null) throw new NullReferenceException("Invalid skill id");
+
+            skill.skill_name = req.skill_name;
+            await _context.SaveChangesAsync();
+
+            return new SkillDtos.SkillDto
+            {
+                skill_id = skill.skill_id,
+                skill_name = skill.skill_name,
+            };
+        }
+
+        public async Task<Boolean> deleteSkill(int skill_id)
+        {
+
+            var skill = await _context.Skills.FirstOrDefaultAsync(i => i.skill_id == skill_id);
+            if (skill == null) throw new NullReferenceException("Invalid skill id");
+
+            _context.Skills.Remove(skill);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task AddCandidateSkills(string candidate_id, int skill_id)

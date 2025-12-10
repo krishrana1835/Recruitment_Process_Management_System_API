@@ -36,6 +36,6 @@
             /// <summary>
             /// Gets or sets the unique identifier of the skill being evaluated in the feedback.
             /// </summary>
-            public int skill_id { get; set; }
+            public int candidate_skill_id { get; set; }
         }
     }

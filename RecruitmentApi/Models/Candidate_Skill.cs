@@ -15,5 +15,7 @@ public partial class Candidate_Skill
 
     public virtual Candidate candidate { get; set; } = null!;
 
+    public virtual ICollection<Interview_Feedback> Interview_Feedbacks { get; set; } = new List<Interview_Feedback>();
+
     public virtual Skill skill { get; set; } = null!;
 }

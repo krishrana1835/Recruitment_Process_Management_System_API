@@ -222,6 +222,21 @@ namespace RecruitmentApi.Services
             };
         }
 
+        public async Task<List<SkillDtos.SkillDto>> FetchJobSkills(int job_id)
+        {
+            var job = await _context.Jobs.FirstOrDefaultAsync(i => i.job_id == job_id);
+            if (job==null)
+                throw new NullReferenceException("Job does not exist");
+
+            var skills = await _context.Jobs_Skills.Where(j => j.job_id == job_id).Include(j => j.skill).Select(r => new SkillDtos.SkillDto
+            {
+                skill_id = r.skill_id,
+                skill_name = r.skill.skill_name
+            }).ToListAsync();
+
+            return skills;
+        }
+
         public async Task<List<InterviewDtos.ListCandidateSheduleRes>> FetchCandidateInterviewShedule(InterviewDtos.ListCandidateSheduleReq req)
         {
             var jobExists = await _context.Jobs

@@ -290,6 +290,68 @@ namespace RecruitmentApi.Migrations
                     b.ToTable("Employee_Records");
                 });
 
+            modelBuilder.Entity("RecruitmentApi.Models.HR_Review", b =>
+                {
+                    b.Property<int>("review_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("review_id"));
+
+                    b.Property<int>("adaptability_rating")
+                        .HasColumnType("int");
+
+                    b.Property<string>("areas_for_improvement")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("career_path_notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("communication_rating")
+                        .HasColumnType("int");
+
+                    b.Property<int>("interview_id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("interview_id1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("leadership_rating")
+                        .HasColumnType("int");
+
+                    b.Property<int>("overall_rating")
+                        .HasColumnType("int");
+
+                    b.Property<string>("strengths")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("teamwork_rating")
+                        .HasColumnType("int");
+
+                    b.Property<string>("training_recommendations")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("user_id")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("user_id1")
+                        .IsRequired()
+                        .HasColumnType("char(8)");
+
+                    b.HasKey("review_id");
+
+                    b.HasIndex("interview_id1");
+
+                    b.HasIndex("user_id1");
+
+                    b.ToTable("HR_Review");
+                });
+
             modelBuilder.Entity("RecruitmentApi.Models.Interview", b =>
                 {
                     b.Property<int>("interview_id")
@@ -304,6 +366,9 @@ namespace RecruitmentApi.Migrations
                         .IsUnicode(false)
                         .HasColumnType("char(8)")
                         .IsFixedLength();
+
+                    b.Property<DateTime>("end_time")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("interview_type_id")
                         .HasColumnType("int");
@@ -331,6 +396,14 @@ namespace RecruitmentApi.Migrations
                         .HasColumnType("char(8)")
                         .IsFixedLength();
 
+                    b.Property<DateTime>("start_time")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.HasKey("interview_id")
                         .HasName("PK_Interviews");
 
@@ -353,9 +426,15 @@ namespace RecruitmentApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("feedback_id"));
 
+                    b.Property<int>("candidate_skill_id")
+                        .HasColumnType("int");
+
                     b.Property<string>("comments")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("concept_rating")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("feedback_at")
                         .ValueGeneratedOnAdd()
@@ -365,10 +444,7 @@ namespace RecruitmentApi.Migrations
                     b.Property<int>("interview_id")
                         .HasColumnType("int");
 
-                    b.Property<int>("rating")
-                        .HasColumnType("int");
-
-                    b.Property<int>("skill_id")
+                    b.Property<int>("technical_rating")
                         .HasColumnType("int");
 
                     b.Property<string>("user_id")
@@ -380,9 +456,9 @@ namespace RecruitmentApi.Migrations
 
                     b.HasKey("feedback_id");
 
-                    b.HasIndex("interview_id");
+                    b.HasIndex("candidate_skill_id");
 
-                    b.HasIndex("skill_id");
+                    b.HasIndex("interview_id");
 
                     b.HasIndex("user_id");
 
@@ -440,11 +516,11 @@ namespace RecruitmentApi.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("sheduled")
+                    b.Property<string>("scheduled")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasDefaultValue("Pending");
 
                     b.Property<int>("status_id")
@@ -771,6 +847,25 @@ namespace RecruitmentApi.Migrations
                     b.Navigation("job");
                 });
 
+            modelBuilder.Entity("RecruitmentApi.Models.HR_Review", b =>
+                {
+                    b.HasOne("RecruitmentApi.Models.Interview", "interview")
+                        .WithMany("HR_Reviews")
+                        .HasForeignKey("interview_id1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RecruitmentApi.Models.User", "user")
+                        .WithMany()
+                        .HasForeignKey("user_id1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("interview");
+
+                    b.Navigation("user");
+                });
+
             modelBuilder.Entity("RecruitmentApi.Models.Interview", b =>
                 {
                     b.HasOne("RecruitmentApi.Models.Candidate", "candidate")
@@ -812,17 +907,17 @@ namespace RecruitmentApi.Migrations
 
             modelBuilder.Entity("RecruitmentApi.Models.Interview_Feedback", b =>
                 {
+                    b.HasOne("RecruitmentApi.Models.Candidate_Skill", "candidate_skill")
+                        .WithMany("Interview_Feedbacks")
+                        .HasForeignKey("candidate_skill_id")
+                        .IsRequired()
+                        .HasConstraintName("FK_Interview_Feedback_CandidateSkills");
+
                     b.HasOne("RecruitmentApi.Models.Interview", "interview")
                         .WithMany("Interview_Feedbacks")
                         .HasForeignKey("interview_id")
                         .IsRequired()
                         .HasConstraintName("FK_Interview_Feedback_Interviews");
-
-                    b.HasOne("RecruitmentApi.Models.Skill", "skill")
-                        .WithMany("Interview_Feedbacks")
-                        .HasForeignKey("skill_id")
-                        .IsRequired()
-                        .HasConstraintName("FK_Interview_Feedback_Skills");
 
                     b.HasOne("RecruitmentApi.Models.User", "user")
                         .WithMany("Interview_Feedbacks")
@@ -830,9 +925,9 @@ namespace RecruitmentApi.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_Interview_Feedback_Users");
 
-                    b.Navigation("interview");
+                    b.Navigation("candidate_skill");
 
-                    b.Navigation("skill");
+                    b.Navigation("interview");
 
                     b.Navigation("user");
                 });
@@ -931,8 +1026,15 @@ namespace RecruitmentApi.Migrations
                     b.Navigation("Interviews");
                 });
 
+            modelBuilder.Entity("RecruitmentApi.Models.Candidate_Skill", b =>
+                {
+                    b.Navigation("Interview_Feedbacks");
+                });
+
             modelBuilder.Entity("RecruitmentApi.Models.Interview", b =>
                 {
+                    b.Navigation("HR_Reviews");
+
                     b.Navigation("Interview_Feedbacks");
                 });
 
@@ -962,8 +1064,6 @@ namespace RecruitmentApi.Migrations
             modelBuilder.Entity("RecruitmentApi.Models.Skill", b =>
                 {
                     b.Navigation("Candidate_Skills");
-
-                    b.Navigation("Interview_Feedbacks");
 
                     b.Navigation("Jobs_Skills");
                 });

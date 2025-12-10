@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RecruitmentApi.Dtos;
+using RecruitmentApi.Models;
 using RecruitmentApi.Services;
 using static RecruitmentApi.Dtos.Candidate_SkillDtos;
 
@@ -28,6 +29,118 @@ namespace RecruitmentApi.Controllers
             catch (Exception ex)
             {
                 return Problem(ex.Message);
+            }
+        }
+
+        [HttpGet("AddSkill/{skill}")]
+        [Authorize(Roles = "Admin, Recruiter, Interviewer")]
+        public async Task<IActionResult> addSkills(string skill)
+        {
+            try
+            {
+                var res = await _skillsService.addSkills(skill);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Skill added successfully!",
+                    data = res
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "An error occured during adding new skill",
+                    error = ex.Message
+                });
+            }
+            catch(InvalidOperationException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "An error occured during adding new skill",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured during adding new skill",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("UpdateSkill")]
+        [Authorize(Roles = "Admin, Recruiter")]
+        public async Task<IActionResult> updateSkill(SkillDtos.SkillDto req)
+        {
+            try
+            {
+                var res = await _skillsService.updateSkill(req);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Skill Updated Successfully!",
+                    data = res
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "An error occured during updating new skill",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured during updating new skill",
+                    error = ex.Message
+                });
+            }
+        }
+
+
+        [HttpDelete("DeleteSkill/{skill_id}")]
+        [Authorize(Roles = "Admin, Recruiter")]
+        public async Task<IActionResult> updateSkill(int skill_id)
+        {
+            try
+            {
+                var res = await _skillsService.deleteSkill(skill_id);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Skill Deleted Successfully!",
+                    data = res
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "An error occured during deleting new skill",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured during deleting new skill",
+                    error = ex.Message
+                });
             }
         }
 

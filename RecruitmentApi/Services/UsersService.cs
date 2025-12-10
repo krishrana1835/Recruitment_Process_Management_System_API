@@ -118,11 +118,11 @@ namespace RecruitmentApi.Services
                 interview_feedbacks = data.Interview_Feedbacks.Select(r => new Interview_FeedBackDtos.Interview_FeedbackDto
                 {
                     feedback_id = r.feedback_id,
-                    rating = r.rating,
+                    rating = r.concept_rating,
                     comments = r.comments,
                     feedback_at = r.feedback_at,
                     interview_id = r.interview_id,
-                    skill_id = r.skill_id,
+                    candidate_skill_id = r.candidate_skill_id,
                 }).ToList(),
 
                 candidate_reviews = data.Candidate_Reviews.Select(r => new Candidate_ReviewDtos.Candidate_ReviewDto

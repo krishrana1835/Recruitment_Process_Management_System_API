@@ -279,10 +279,10 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Interview_Feedback_Interviews");
 
-            entity.HasOne(d => d.skill).WithMany(p => p.Interview_Feedbacks)
-                .HasForeignKey(d => d.skill_id)
+            entity.HasOne(d => d.candidate_skill).WithMany(p => p.Interview_Feedbacks)
+                .HasForeignKey(d => d.candidate_skill_id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Interview_Feedback_Skills");
+                .HasConstraintName("FK_Interview_Feedback_CandidateSkills");
 
             entity.HasOne(d => d.user).WithMany(p => p.Interview_Feedbacks)
                 .HasForeignKey(d => d.user_id)

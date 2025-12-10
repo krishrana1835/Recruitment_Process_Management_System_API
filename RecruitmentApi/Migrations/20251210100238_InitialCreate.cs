@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RecruitmentApi.Migrations
 {
     /// <inheritdoc />
-    public partial class AddSheduledColumn : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -210,7 +210,7 @@ namespace RecruitmentApi.Migrations
                     created_at = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "(getdate())"),
                     created_by = table.Column<string>(type: "char(8)", unicode: false, fixedLength: true, maxLength: 8, nullable: false),
                     status_id = table.Column<int>(type: "int", nullable: false),
-                    sheduled = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false, defaultValue: "Pending")
+                    scheduled = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false, defaultValue: "Pending")
                 },
                 constraints: table =>
                 {
@@ -330,9 +330,9 @@ namespace RecruitmentApi.Migrations
                     scheduled_by = table.Column<string>(type: "char(8)", unicode: false, fixedLength: true, maxLength: 8, nullable: false),
                     interview_type_id = table.Column<int>(type: "int", nullable: false),
                     mode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    start_time = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "(getdate())"),
-                    end_time = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "(getdate())"),
-                    status = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    start_time = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    end_time = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    status = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -385,31 +385,69 @@ namespace RecruitmentApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "HR_Review",
+                columns: table => new
+                {
+                    review_id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    communication_rating = table.Column<int>(type: "int", nullable: false),
+                    teamwork_rating = table.Column<int>(type: "int", nullable: false),
+                    adaptability_rating = table.Column<int>(type: "int", nullable: false),
+                    leadership_rating = table.Column<int>(type: "int", nullable: false),
+                    strengths = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    areas_for_improvement = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    training_recommendations = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    career_path_notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    overall_rating = table.Column<int>(type: "int", nullable: false),
+                    interview_id = table.Column<int>(type: "int", nullable: false),
+                    user_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    interview_id1 = table.Column<int>(type: "int", nullable: false),
+                    user_id1 = table.Column<string>(type: "char(8)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_HR_Review", x => x.review_id);
+                    table.ForeignKey(
+                        name: "FK_HR_Review_Interviews_interview_id1",
+                        column: x => x.interview_id1,
+                        principalTable: "Interviews",
+                        principalColumn: "interview_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_HR_Review_Users_user_id1",
+                        column: x => x.user_id1,
+                        principalTable: "Users",
+                        principalColumn: "user_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Interview_Feedback",
                 columns: table => new
                 {
                     feedback_id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    rating = table.Column<int>(type: "int", nullable: false),
+                    concept_rating = table.Column<int>(type: "int", nullable: false),
+                    technical_rating = table.Column<int>(type: "int", nullable: false),
                     comments = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     feedback_at = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "(getdate())"),
                     interview_id = table.Column<int>(type: "int", nullable: false),
                     user_id = table.Column<string>(type: "char(8)", unicode: false, fixedLength: true, maxLength: 8, nullable: false),
-                    skill_id = table.Column<int>(type: "int", nullable: false)
+                    candidate_skill_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Interview_Feedback", x => x.feedback_id);
                     table.ForeignKey(
+                        name: "FK_Interview_Feedback_CandidateSkills",
+                        column: x => x.candidate_skill_id,
+                        principalTable: "Candidate_Skills",
+                        principalColumn: "candidate_skill_id");
+                    table.ForeignKey(
                         name: "FK_Interview_Feedback_Interviews",
                         column: x => x.interview_id,
                         principalTable: "Interviews",
                         principalColumn: "interview_id");
-                    table.ForeignKey(
-                        name: "FK_Interview_Feedback_Skills",
-                        column: x => x.skill_id,
-                        principalTable: "Skills",
-                        principalColumn: "skill_id");
                     table.ForeignKey(
                         name: "FK_Interview_Feedback_Users",
                         column: x => x.user_id,
@@ -503,14 +541,24 @@ namespace RecruitmentApi.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_HR_Review_interview_id1",
+                table: "HR_Review",
+                column: "interview_id1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HR_Review_user_id1",
+                table: "HR_Review",
+                column: "user_id1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Interview_Feedback_candidate_skill_id",
+                table: "Interview_Feedback",
+                column: "candidate_skill_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Interview_Feedback_interview_id",
                 table: "Interview_Feedback",
                 column: "interview_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Interview_Feedback_skill_id",
-                table: "Interview_Feedback",
-                column: "skill_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Interview_Feedback_user_id",
@@ -595,13 +643,13 @@ namespace RecruitmentApi.Migrations
                 name: "Candidate_Reviews");
 
             migrationBuilder.DropTable(
-                name: "Candidate_Skills");
-
-            migrationBuilder.DropTable(
                 name: "Candidate_Status_History");
 
             migrationBuilder.DropTable(
                 name: "Employee_Records");
+
+            migrationBuilder.DropTable(
+                name: "HR_Review");
 
             migrationBuilder.DropTable(
                 name: "Interview_Feedback");
@@ -619,13 +667,16 @@ namespace RecruitmentApi.Migrations
                 name: "Users_Roles");
 
             migrationBuilder.DropTable(
+                name: "Candidate_Skills");
+
+            migrationBuilder.DropTable(
                 name: "Interviews");
 
             migrationBuilder.DropTable(
-                name: "Skills");
+                name: "Roles");
 
             migrationBuilder.DropTable(
-                name: "Roles");
+                name: "Skills");
 
             migrationBuilder.DropTable(
                 name: "Candidates");

@@ -37,5 +37,7 @@ public partial class Interview
 
     public virtual ICollection<Interview_Feedback> Interview_Feedbacks { get; set; } = new List<Interview_Feedback>();
 
+    public virtual ICollection<HR_Review> HR_Reviews { get; set; } = new List<HR_Review>();
+
     public virtual ICollection<User> users { get; set; } = new List<User>();
 }

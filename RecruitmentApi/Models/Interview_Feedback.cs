@@ -7,7 +7,9 @@ public partial class Interview_Feedback
 {
     public int feedback_id { get; set; }
 
-    public int rating { get; set; }
+    public int concept_rating { get; set; }
+
+    public int technical_rating { get; set; }
 
     public string comments { get; set; } = null!;
 
@@ -17,11 +19,11 @@ public partial class Interview_Feedback
 
     public string user_id { get; set; } = null!;
 
-    public int skill_id { get; set; }
+    public int candidate_skill_id { get; set; }
 
     public virtual Interview interview { get; set; } = null!;
 
-    public virtual Skill skill { get; set; } = null!;
+    public virtual Candidate_Skill candidate_skill { get; set; } = null!;
 
     public virtual User user { get; set; } = null!;
 }
