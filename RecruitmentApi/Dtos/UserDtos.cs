@@ -52,6 +52,8 @@ public class UserDtos
     {
         public string user_id { get; set; }
         public string name { get; set; } = null!;
+
+        public List<RoleDtos.RoleDto> roles { get; set; } = null!;
     }
 
     /// <summary>

@@ -63,10 +63,10 @@ namespace RecruitmentApi.Services
                 changed_by = job.status.changed_by
             };
 
-            var jobSkillsDtos = job.Jobs_Skills.Select(skill => new Jobs_SkillsDtos.AddJobs_SkillDto
+            var jobSkillsDtos = job.Jobs_Skills.Select(skill => new Jobs_SkillsDtos.Jobs_SkillDto
             {
                 job_id = skill.job_id,
-                skill_ids = skill.skill_id,
+                skill_id = skill.skill_id,
                 skill_type = skill.skill_type
             }).ToList();
 
@@ -134,7 +134,7 @@ namespace RecruitmentApi.Services
                 var jobSkills = dto.Jobs_Skills.Select(skillDto => new Jobs_Skill
                 {
                     job_id = jobEntity.job_id,
-                    skill_id = skillDto.skill_ids,
+                    skill_id = skillDto.skill_id,
                     skill_type = skillDto.skill_type == "Preferred" ? "P" : "R"
                 }).ToList();
 
@@ -229,7 +229,7 @@ namespace RecruitmentApi.Services
                 var jobSkills = dto.Jobs_Skills.Select(skillDto => new Jobs_Skill
                 {
                     job_id = jobEntity.job_id,
-                    skill_id = skillDto.skill_ids,
+                    skill_id = skillDto.skill_id,
                     skill_type = skillDto.skill_type == "Preferred" ? "P" : "R"
                 }).ToList();
 

@@ -62,7 +62,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetInterviewers")]
-        [Authorize(Roles = "Admin, Recruiter, Interviewer")]
+        [Authorize(Roles = "Admin, Recruiter, Interviewer, HR")]
         public async Task<IActionResult> getInterviewers()
         {
             try
@@ -105,7 +105,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetUserProfileToUpdate/{id}")]
-        [Authorize(Roles = "Admin, Reviewer, Recruiter, Interviewer")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter, Interviewer, HR")]
         public async Task<IActionResult> getUserProfileToUpdate(string id)
         {
             try
@@ -133,7 +133,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPut("UpdatePassword")]
-        [Authorize(Roles = "Admin, Reviewer, Recruiter, Interviewer")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter, Interviewer, HR")]
         public async Task<IActionResult> updateUserPassword(UserDtos.UpdateUserPassword dto)
         {
             try

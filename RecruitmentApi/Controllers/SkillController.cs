@@ -76,7 +76,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("UpdateSkill")]
-        [Authorize(Roles = "Admin, Recruiter")]
+        [Authorize(Roles = "Admin, Recruiter, Interviewer")]
         public async Task<IActionResult> updateSkill(SkillDtos.SkillDto req)
         {
             try
@@ -111,7 +111,7 @@ namespace RecruitmentApi.Controllers
 
 
         [HttpDelete("DeleteSkill/{skill_id}")]
-        [Authorize(Roles = "Admin, Recruiter")]
+        [Authorize(Roles = "Admin, Recruiter, Interviewer")]
         public async Task<IActionResult> updateSkill(int skill_id)
         {
             try

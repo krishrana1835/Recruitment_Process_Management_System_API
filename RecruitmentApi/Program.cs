@@ -31,6 +31,7 @@ namespace RecruitmentApi
             builder.Services.AddScoped<SheduleInterviewService>();
             builder.Services.AddScoped<Interview_TypeService>();
             builder.Services.AddScoped<IResumeParserService, ResumeParserService>();
+            builder.Services.AddScoped<InterviewFeedbackService>();
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("dbConnection")));

@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-
-namespace RecruitmentApi.Models;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using RecruitmentApi.Models;
 
 public partial class Candidate_Document
 {

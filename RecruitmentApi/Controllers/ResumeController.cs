@@ -37,5 +37,33 @@ namespace RecruitmentApi.Controllers
             }
         }
 
+        public class Path
+        {
+            public string path { get; set; } = null!;
+        }
+
+        [HttpPost("GetCandidateSkills")]
+        public async Task<IActionResult> AnalyzeResume([FromBody]Path path)
+        {
+            try
+            {
+                var result = await _parserService.AnalyzeCandidateResumeInterviewAsync(path.path);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Candidate Skills from resume successfully fetched",
+                    data=result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new {
+                    success = false,
+                    message = "An error occured during fetching candidate skills from resume",
+                    error = ex.Message
+                });
+            }
+        }
+
     }
 }

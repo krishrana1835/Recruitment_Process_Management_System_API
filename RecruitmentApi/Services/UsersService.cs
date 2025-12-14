@@ -157,16 +157,19 @@ namespace RecruitmentApi.Services
 
         public async Task<List<UserDtos.InterviewerInfo>> GetInterviewers()
         {
-            var data = await _context.Users.Include(r => r.roles).Where(r => r.roles.Any(r => r.role_name == "Interviewer" || r.role_name == "HR")).ToListAsync();
-            if (data == null)
-                return [];
-            var response = data.Select(r => new UserDtos.InterviewerInfo
+            var data = await _context.Users.Where(r => r.roles.Any(r => r.role_name == "Interviewer" || r.role_name == "HR")).Select(r => new UserDtos.InterviewerInfo
             {
                 user_id = r.user_id,
                 name = r.name,
-            }).ToList();
+                roles = r.roles.Select(s => new RoleDtos.RoleDto
+                {
+                    role_name = s.role_name,
+                }).ToList()
+            }).ToListAsync();
+            if (data == null)
+                return [];
 
-            return response;
+            return data;
         } 
 
         public async Task<UserDtos.UserDto> GetUserProfileToUpdate(string id)

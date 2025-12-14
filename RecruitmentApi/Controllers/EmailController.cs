@@ -18,7 +18,7 @@ namespace RecruitmentApi.Controllers
             _smtpClient = new SmtpClient("smtp.gmail.com")
             {
                 Port = 587,
-                Credentials = new NetworkCredential("sofiamarshal77@gmail.com", "fqsc rtvs tmoq svey"),
+                Credentials = new NetworkCredential("sofiamarshal77@gmail.com", "ghpz oedu mwfi oovq"),
                 EnableSsl = true,
             };
         }

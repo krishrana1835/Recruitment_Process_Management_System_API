@@ -17,7 +17,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Candidate,Reviewer, Recruiter, Interviewer")]
+        [Authorize(Roles = "Admin,Candidate,Reviewer, Recruiter, Interviewer, HR")]
         public async Task<IActionResult> getAllJobs()
         {
             try

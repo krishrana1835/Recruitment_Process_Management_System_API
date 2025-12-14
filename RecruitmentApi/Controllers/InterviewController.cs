@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using RecruitmentApi.Dtos;
 using RecruitmentApi.Services;
 
@@ -56,7 +57,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("InterviewRounds/{job_id}")]
-        [Authorize(Roles = "Admin, Recruiter, Interviewer")]
+        [Authorize(Roles = "Admin, Recruiter, Interviewer, HR")]
         public async Task<IActionResult> fetchRounds(int job_id)
         {
             try
@@ -152,7 +153,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("CandidateInterviewSchedule/Interviewer")]
-        [Authorize(Roles = "Admin, Interviewer")]
+        [Authorize(Roles = "Admin, Interviewer, HR")]
         public async Task<IActionResult> fetchCandidateSheduleInterviewer(InterviewDtos.ListCandidateSheduleReq req)
         {
             try
@@ -180,6 +181,74 @@ namespace RecruitmentApi.Controllers
                 {
                     success = false,
                     message = "An error occurred while fetching candidate intreview schedule.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("GetSkillDataForInterview/{interview_id}")]
+        [Authorize(Roles = "Admin, Interviewer, HR")]
+        public async Task<IActionResult> getSkillData(int interview_id)
+        {
+            try
+            {
+                var res = await _scheduleService.FetchSkillDataForInterview(interview_id);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Skill data fetched successfully",
+                    data = res
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "An error occurred while fetching skill data.",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while fetching skill data.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("CheckCandidateInterviewHistory/{interview_id}")]
+        [Authorize(Roles = "Admin, HR, Interviewer")]
+        public async Task<IActionResult> checkCandidateInterviewHistory(int interview_id)
+        {
+            try
+            {
+                var res = await _scheduleService.CheckCandidateInterviewHistory(interview_id);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Interview history fetched successflly.",
+                    data = res
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "An error occured during fetcing candidate status history",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500,new
+                {
+                    success = false,
+                    message = "An error occured during fetcing candidate status history",
                     error = ex.Message
                 });
             }
@@ -229,6 +298,60 @@ namespace RecruitmentApi.Controllers
 
         }
 
+        [HttpPost("UpdateInterviewStatus")]
+        [Authorize(Roles = "Admin, HR, Interviewer")]
+        public async Task<IActionResult> updateCandidateStatus([FromBody] InterviewDtos.InterviewStatusUpdateReq req)
+        {
+            try
+            {
+                if (req.status.IsNullOrEmpty())
+                    throw new ArgumentException("Invalid input provided");
+
+                await _scheduleService.UpdateCandidateInterviewStatus(req.interview_id, req.status);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Interview status successfully updated",
+                    data = true
+                });
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Invalid input provided",
+                    error = ex.Message
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "An error occured during updating status",
+                    error = ex.Message
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Invalid input provided",
+                    error = ex.Message
+                });
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured while updating interview status",
+                    error = ex.Message
+                });
+            }
+        }
 
         [HttpDelete("DeleteCandidateInterview/{interview_id}")]
         [Authorize(Roles = "Admin, Recruiter")]

@@ -109,7 +109,7 @@ namespace RecruitmentApi.Dtos
 
             public string created_by { get; set; } = null!;
 
-            public virtual ICollection<Jobs_SkillsDtos.AddJobs_SkillDto> Jobs_Skills { get; set; }
+            public virtual ICollection<Jobs_SkillsDtos.Jobs_SkillDto> Jobs_Skills { get; set; }
 
             /// <summary>
             /// Gets or sets the status of the job.

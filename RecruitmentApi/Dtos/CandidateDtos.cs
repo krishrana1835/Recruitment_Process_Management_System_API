@@ -50,6 +50,11 @@ namespace RecruitmentApi.Dtos
             public string password { get; set; } = null!;
         }
 
+        public class ForInterviewRes : CandidateDto
+        {
+            public string resume_path { get; set; } = null!;
+        }
+
         public class CreateCandidateDto : CandidateDto
         {
             public string? phone { get; set; }

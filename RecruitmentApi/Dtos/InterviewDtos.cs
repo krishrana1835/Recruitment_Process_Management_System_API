@@ -85,6 +85,7 @@ namespace RecruitmentApi.Dtos
         {
             public string candidate_id { get; set; } = null!;
             public string full_name { get; set; } = null!;
+            public string email { get; set; } = null!;
         }
 
         public class Interview_TypeData
@@ -115,6 +116,19 @@ namespace RecruitmentApi.Dtos
         {
             public int job_id { get; set; }
             public string candidate_id { get; set; } = null!;
+        }
+
+        public class InterviewStatusUpdateReq
+        {
+            public int interview_id { get; set; }
+            public string status { get; set; } = null!;
+        }
+
+        public class InterviewSkillsRes
+        {
+            public CandidateDtos.ForInterviewRes candidate_data { get; set; } = new();
+            public List<Jobs_SkillsDtos.InterviewJobSkillRes> job_skills { get; set; } = new();
+            public List<Candidate_SkillDtos.Candidate_SkillDto> candidate_skills { get; set; } = new();
         }
     }
 }

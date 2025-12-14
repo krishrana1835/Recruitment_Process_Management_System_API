@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecruitmentApi.Data;
 
@@ -11,9 +12,11 @@ using RecruitmentApi.Data;
 namespace RecruitmentApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251210105549_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,64 +24,6 @@ namespace RecruitmentApi.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Candidate_Document", b =>
-                {
-                    b.Property<int>("DocumentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("document_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocumentId"));
-
-                    b.Property<string>("CandidateId")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .IsUnicode(false)
-                        .HasColumnType("char(8)")
-                        .HasColumnName("candidate_id")
-                        .IsFixedLength();
-
-                    b.Property<string>("DocumentType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("document_type");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("file_path");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasColumnName("uploaded_at")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("VerificationStatus")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("Pending")
-                        .HasColumnName("verification_status");
-
-                    b.Property<string>("candidate_id")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("DocumentId");
-
-                    b.HasIndex("CandidateId");
-
-                    b.ToTable("Candidate_Documents", t =>
-                        {
-                            t.Property("candidate_id")
-                                .HasColumnName("candidate_id1");
-                        });
-                });
 
             modelBuilder.Entity("Interview_Panel", b =>
                 {
@@ -100,54 +45,91 @@ namespace RecruitmentApi.Migrations
 
             modelBuilder.Entity("RecruitmentApi.Models.Candidate", b =>
                 {
-                    b.Property<string>("CandidateId")
+                    b.Property<string>("candidate_id")
                         .HasMaxLength(8)
                         .IsUnicode(false)
                         .HasColumnType("char(8)")
-                        .HasColumnName("candidate_id")
                         .IsFixedLength();
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("created_at")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasColumnName("created_at")
                         .HasDefaultValueSql("(getdate())");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("email")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("email");
+                        .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("FullName")
+                    b.Property<string>("full_name")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("full_name");
+                        .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("password")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("password");
+                        .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("Phone")
+                    b.Property<string>("phone")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("phone");
+                        .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("ResumePath")
+                    b.Property<string>("resume_path")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("resume_path");
+                        .HasColumnType("nvarchar(500)");
 
-                    b.HasKey("CandidateId");
+                    b.HasKey("candidate_id");
 
-                    b.HasIndex(new[] { "Email" }, "UQ_Candidates_Email")
+                    b.HasIndex(new[] { "email" }, "UQ_Candidates_Email")
                         .IsUnique();
 
                     b.ToTable("Candidates");
+                });
+
+            modelBuilder.Entity("RecruitmentApi.Models.Candidate_Document", b =>
+                {
+                    b.Property<int>("document_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("document_id"));
+
+                    b.Property<string>("candidate_id")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("char(8)")
+                        .IsFixedLength();
+
+                    b.Property<string>("document_type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("file_path")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("uploaded_at")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<string>("verification_status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Pending");
+
+                    b.HasKey("document_id");
+
+                    b.HasIndex("candidate_id");
+
+                    b.ToTable("Candidate_Documents");
                 });
 
             modelBuilder.Entity("RecruitmentApi.Models.Candidate_Review", b =>
@@ -319,9 +301,6 @@ namespace RecruitmentApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("review_id"));
 
-                    b.Property<int>("InterviewId")
-                        .HasColumnType("int");
-
                     b.Property<int>("adaptability_rating")
                         .HasColumnType("int");
 
@@ -337,6 +316,9 @@ namespace RecruitmentApi.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("interview_id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("interview_id1")
                         .HasColumnType("int");
 
                     b.Property<int>("leadership_rating")
@@ -366,7 +348,7 @@ namespace RecruitmentApi.Migrations
 
                     b.HasKey("review_id");
 
-                    b.HasIndex("InterviewId");
+                    b.HasIndex("interview_id1");
 
                     b.HasIndex("user_id1");
 
@@ -375,70 +357,21 @@ namespace RecruitmentApi.Migrations
 
             modelBuilder.Entity("RecruitmentApi.Models.Interview", b =>
                 {
-                    b.Property<int>("InterviewId")
+                    b.Property<int>("interview_id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("interview_id");
+                        .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InterviewId"));
-
-                    b.Property<string>("CandidateId")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .IsUnicode(false)
-                        .HasColumnType("char(8)")
-                        .HasColumnName("candidate_id")
-                        .IsFixedLength();
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("end_time");
-
-                    b.Property<int>("InterviewTypeId")
-                        .HasColumnType("int")
-                        .HasColumnName("interview_type_id");
-
-                    b.Property<int>("JobId")
-                        .HasColumnType("int")
-                        .HasColumnName("job_id");
-
-                    b.Property<string>("LocationOrLink")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)")
-                        .HasColumnName("location_or_link");
-
-                    b.Property<string>("Mode")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("mode");
-
-                    b.Property<int>("RoundNumber")
-                        .HasColumnType("int")
-                        .HasColumnName("round_number");
-
-                    b.Property<string>("ScheduledBy")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .IsUnicode(false)
-                        .HasColumnType("char(8)")
-                        .HasColumnName("scheduled_by")
-                        .IsFixedLength();
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("start_time");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("status");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("interview_id"));
 
                     b.Property<string>("candidate_id")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("char(8)")
+                        .IsFixedLength();
+
+                    b.Property<DateTime>("end_time")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("interview_type_id")
                         .HasColumnType("int");
@@ -446,34 +379,46 @@ namespace RecruitmentApi.Migrations
                     b.Property<int>("job_id")
                         .HasColumnType("int");
 
-                    b.Property<int>("scheduled_by")
+                    b.Property<string>("location_or_link")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("mode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("round_number")
                         .HasColumnType("int");
 
-                    b.HasKey("InterviewId")
+                    b.Property<string>("scheduled_by")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("char(8)")
+                        .IsFixedLength();
+
+                    b.Property<DateTime>("start_time")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("interview_id")
                         .HasName("PK_Interviews");
 
-                    b.HasIndex("CandidateId");
+                    b.HasIndex("candidate_id");
 
-                    b.HasIndex("InterviewTypeId");
+                    b.HasIndex("interview_type_id");
 
-                    b.HasIndex("JobId");
+                    b.HasIndex("job_id");
 
-                    b.HasIndex("ScheduledBy");
+                    b.HasIndex("scheduled_by");
 
-                    b.ToTable("Interviews", t =>
-                        {
-                            t.Property("candidate_id")
-                                .HasColumnName("candidate_id1");
-
-                            t.Property("interview_type_id")
-                                .HasColumnName("interview_type_id1");
-
-                            t.Property("job_id")
-                                .HasColumnName("job_id1");
-
-                            t.Property("scheduled_by")
-                                .HasColumnName("scheduled_by1");
-                        });
+                    b.ToTable("Interviews");
                 });
 
             modelBuilder.Entity("RecruitmentApi.Models.Interview_Feedback", b =>
@@ -783,18 +728,6 @@ namespace RecruitmentApi.Migrations
                     b.ToTable("Users_Roles", (string)null);
                 });
 
-            modelBuilder.Entity("Candidate_Document", b =>
-                {
-                    b.HasOne("RecruitmentApi.Models.Candidate", "Candidate")
-                        .WithMany("Candidate_Documents")
-                        .HasForeignKey("CandidateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Candidate_Documents_Candidates");
-
-                    b.Navigation("Candidate");
-                });
-
             modelBuilder.Entity("Interview_Panel", b =>
                 {
                     b.HasOne("RecruitmentApi.Models.Interview", null)
@@ -809,6 +742,18 @@ namespace RecruitmentApi.Migrations
                         .HasForeignKey("user_id")
                         .IsRequired()
                         .HasConstraintName("FK_Interview_Panel_Users");
+                });
+
+            modelBuilder.Entity("RecruitmentApi.Models.Candidate_Document", b =>
+                {
+                    b.HasOne("RecruitmentApi.Models.Candidate", "candidate")
+                        .WithMany("Candidate_Documents")
+                        .HasForeignKey("candidate_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Candidate_Documents_Candidates");
+
+                    b.Navigation("candidate");
                 });
 
             modelBuilder.Entity("RecruitmentApi.Models.Candidate_Review", b =>
@@ -909,7 +854,7 @@ namespace RecruitmentApi.Migrations
                 {
                     b.HasOne("RecruitmentApi.Models.Interview", "interview")
                         .WithMany("HR_Reviews")
-                        .HasForeignKey("InterviewId")
+                        .HasForeignKey("interview_id1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -926,41 +871,41 @@ namespace RecruitmentApi.Migrations
 
             modelBuilder.Entity("RecruitmentApi.Models.Interview", b =>
                 {
-                    b.HasOne("RecruitmentApi.Models.Candidate", "Candidate")
+                    b.HasOne("RecruitmentApi.Models.Candidate", "candidate")
                         .WithMany("Interviews")
-                        .HasForeignKey("CandidateId")
+                        .HasForeignKey("candidate_id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("FK_Interviews_Candidates");
 
-                    b.HasOne("RecruitmentApi.Models.Interview_Type", "Interview_type")
+                    b.HasOne("RecruitmentApi.Models.Interview_Type", "interview_type")
                         .WithMany("Interviews")
-                        .HasForeignKey("InterviewTypeId")
+                        .HasForeignKey("interview_type_id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("FK_Interviews_Interview_Type");
 
-                    b.HasOne("RecruitmentApi.Models.Job", "Job")
+                    b.HasOne("RecruitmentApi.Models.Job", "job")
                         .WithMany("Interviews")
-                        .HasForeignKey("JobId")
+                        .HasForeignKey("job_id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("FK_Interviews_Jobs");
 
-                    b.HasOne("RecruitmentApi.Models.User", "Scheduled_by_user")
+                    b.HasOne("RecruitmentApi.Models.User", "scheduled_by_user")
                         .WithMany("ScheduledInterviews")
-                        .HasForeignKey("ScheduledBy")
+                        .HasForeignKey("scheduled_by")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("FK_Interviews_Users");
 
-                    b.Navigation("Candidate");
+                    b.Navigation("candidate");
 
-                    b.Navigation("Interview_type");
+                    b.Navigation("interview_type");
 
-                    b.Navigation("Job");
+                    b.Navigation("job");
 
-                    b.Navigation("Scheduled_by_user");
+                    b.Navigation("scheduled_by_user");
                 });
 
             modelBuilder.Entity("RecruitmentApi.Models.Interview_Feedback", b =>
