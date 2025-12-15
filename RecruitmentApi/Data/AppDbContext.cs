@@ -36,6 +36,9 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Job> Jobs { get; set; }
 
+    public virtual DbSet<HR_Review> HR_Reviews { get; set; }
+
+
     public virtual DbSet<Jobs_Skill> Jobs_Skills { get; set; }
 
     public virtual DbSet<Jobs_Status> Jobs_Statuses { get; set; }
@@ -172,6 +175,37 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Candidate_Status_History_Jobs");
         });
+
+        modelBuilder.Entity<HR_Review>(entity =>
+        {
+            entity.HasKey(e => e.review_id);
+
+            entity.ToTable("HR_Review");
+
+            entity.Property(e => e.user_id)
+                .HasMaxLength(8)
+                .IsUnicode(false)
+                .IsFixedLength()
+                .IsRequired();
+
+            entity.Property(e => e.strengths).HasMaxLength(2000);
+            entity.Property(e => e.areas_for_improvement).HasMaxLength(2000);
+            entity.Property(e => e.training_recommendations).HasMaxLength(2000);
+            entity.Property(e => e.career_path_notes).HasMaxLength(2000);
+
+            entity.HasOne(d => d.interview)
+                .WithMany(p => p.HR_Reviews)
+                .HasForeignKey(d => d.interview_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_HR_Review_Interviews");
+
+            entity.HasOne(d => d.user)
+                .WithMany(p => p.HR_Reviews)
+                .HasForeignKey(d => d.user_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_HR_Review_Users");
+        });
+
 
         modelBuilder.Entity<Employee_Record>(entity =>
         {

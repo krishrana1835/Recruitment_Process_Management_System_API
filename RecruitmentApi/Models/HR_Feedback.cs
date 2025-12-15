@@ -5,7 +5,6 @@ namespace RecruitmentApi.Models
 {
     public class HR_Review
     {
-        [Key]
         public int review_id { get; set; }
 
         public int communication_rating { get; set; }

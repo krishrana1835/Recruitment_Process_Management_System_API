@@ -1,4 +1,6 @@
-﻿/// <summary>
+﻿using RecruitmentApi.Dtos;
+
+/// <summary>
 /// Represents a data transfer object for interview feedback.
 /// </summary>
 public class Interview_FeedBackDtos
@@ -37,6 +39,16 @@ public class Interview_FeedBackDtos
         /// Gets or sets the unique identifier of the skill being evaluated in the feedback.
         /// </summary>
         public int candidate_skill_id { get; set; }
+    }
+
+    public class InterveiwFeedbackCard
+    {
+        public int concept_rating { get; set; }
+        public string user_id { get; set; } = null!;
+        public int technical_rating { get; set; }
+        public int candidate_skill_id { get; set; }
+
+        public Candidate_SkillDtos.Candidate_SkillDto Candidaete_Skill { get; set; } = new();
     }
 
     public class SkillReviewDto
