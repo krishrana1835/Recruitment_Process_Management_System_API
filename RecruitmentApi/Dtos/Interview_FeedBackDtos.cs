@@ -75,6 +75,8 @@ public class Interview_FeedBackDtos
 
         public string candidate_id { get; set; } = null!;
 
+        public float total_score { get; set; }
+
         public List<SkillReviewDto> extra_skills { get; set; } = new();
         public List<SkillReviewDto> preferred_skills { get; set; } = new();
         public List<SkillReviewDto> required_skills { get; set; } = new();

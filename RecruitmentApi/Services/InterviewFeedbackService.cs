@@ -15,8 +15,11 @@ namespace RecruitmentApi.Services
 
         public async Task AddOrUpdateCandidateFeedback(Interview_FeedBackDtos.InterviewSkillSubmissionDto req)
         {
-            if (!await _context.Interviews.AnyAsync(i => i.interview_id == req.interview_id))
+            var interview = await _context.Interviews.FirstOrDefaultAsync(i => i.interview_id == req.interview_id);
+            if (interview == null)
                 throw new NullReferenceException("Interview does not exist");
+            interview.score = req.total_score;
+            await _context.SaveChangesAsync();
 
             async Task ProcessSkills(List<Interview_FeedBackDtos.SkillReviewDto> skills)
             {

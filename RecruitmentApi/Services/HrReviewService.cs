@@ -48,6 +48,12 @@ namespace RecruitmentApi.Services
                 req.training_recommendations.IsNullOrEmpty() || req.career_path_notes.IsNullOrEmpty())
                 throw new ArgumentException("Invalid input");
 
+            var interveiw = await _context.Interviews.FirstOrDefaultAsync(i => i.interview_id == req.interview_id);
+            if (interveiw == null)
+                throw new NullReferenceException("Interview does not exist");
+
+            interveiw.score = req.total_score;
+
             var review = await _context.HR_Reviews.FirstOrDefaultAsync(i => i.user_id == req.user_id && i.interview_id == req.interview_id);
 
             if(review == null)

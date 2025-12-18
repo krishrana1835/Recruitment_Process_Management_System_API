@@ -376,6 +376,26 @@ namespace RecruitmentApi.Services
             return schedule;
         }
 
+        public async Task<List<CandidateDtos.CandidateDto>> FetchSelectedCandidates(int job_id)
+        {
+            if (!await _context.Jobs.AnyAsync(i => i.job_id == job_id))
+                throw new NullReferenceException("Job does not exist");
+
+            var lastRoundNumber = await _context.Interviews
+                .Where(i => i.job_id == job_id)
+                .MaxAsync(i => (int?)i.round_number);
+
+            var candidates = await _context.Interviews.Where(i => i.job_id == job_id && i.status == "Selected" && i.round_number == lastRoundNumber)
+                .Select(r => new CandidateDtos.CandidateDto
+                {
+                    candidate_id = r.candidate_id,
+                    full_name = r.candidate.full_name,
+                    email = r.candidate.email
+                }).ToListAsync();
+
+            return candidates;
+        }
+
         public async Task<List<JobDtos.ListJobTitle>> CheckCandidateInterviewHistory(int interview_id)
         {
             var interview = await _context.Interviews.FirstOrDefaultAsync(i => i.interview_id == interview_id);
@@ -386,7 +406,7 @@ namespace RecruitmentApi.Services
                 i.candidate_id == interview.candidate_id &&
                 i.job_id != interview.job_id &&
                 i.round_number == 1 &&
-                i.start_time < DateTime.Now)
+                i.start_time < interview.start_time)
             .Select(i => new JobDtos.ListJobTitle
             {
                 job_id = i.job_id,

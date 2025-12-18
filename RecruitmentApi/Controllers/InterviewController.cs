@@ -245,7 +245,41 @@ namespace RecruitmentApi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500,new
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured during fetcing candidate status history",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("GetSelectedCandidates/{job_id}")]
+        [Authorize(Roles = "Admin, HR")]
+        public async Task<IActionResult> getSelectedCandidates(int job_id)
+        {
+            try
+            {
+                var res = await _scheduleService.FetchSelectedCandidates(job_id);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Selected candidates fetched successflly.",
+                    data = res
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "An error occured during fetcing candidate status history",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
                 {
                     success = false,
                     message = "An error occured during fetcing candidate status history",
@@ -388,7 +422,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPut("UpdateCandidateSchedule")]
-        [Authorize(Roles = "Admin, Recruiter, Interviewer")]
+        [Authorize(Roles = "Admin, Recruiter, Interviewer, HR")]
         public async Task<IActionResult> updateCandidateSchedule(InterviewDtos.UpdateCandidateScheduleReq req)
         {
             try

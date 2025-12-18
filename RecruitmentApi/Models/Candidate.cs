@@ -17,6 +17,8 @@ public partial class Candidate
 
     public string resume_path { get; set; } = null!;
 
+    public Boolean doc_upload { get; set; } = false;
+
     public DateTime created_at { get; set; }
 
     public string password { get; set; } = null!;
