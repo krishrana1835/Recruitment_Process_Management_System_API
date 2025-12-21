@@ -19,7 +19,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("GetRoundRating")]
-        [Authorize(Roles = "Admin, Interviewer, HR")]
+        [Authorize(Roles = "Admin, Interviewer, HR, Viewer")]
         public async Task<IActionResult> getRoundRating(RatingCardDtos.RoundCardReq req)
         {
             try
@@ -53,7 +53,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetCandidateAllScores/{job_id}/{round_number}/{candidate_id}")]
-        [Authorize(Roles = "Admin, Interviewer, HR")]
+        [Authorize(Roles = "Admin, Interviewer, HR, Viewer")]
         public async Task<IActionResult> getCandidateScores(int job_id, int round_number, string candidate_id)
         {
             try
@@ -87,7 +87,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetCandidateWithSocre/{job_id}/{round_number}")]
-        [Authorize(Roles = "Admin, Interviewer, HR")]
+        [Authorize(Roles = "Admin, Interviewer, HR, Viewer")]
         public async Task<IActionResult> getCandidatesWithScore(int job_id, int round_number)
         {
             try

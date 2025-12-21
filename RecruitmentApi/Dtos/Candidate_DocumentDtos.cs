@@ -27,5 +27,17 @@ namespace RecruitmentApi.Dtos
             public string candidate_id { get; set; } = null!;
 
         }
+
+        public class ChangeStatusReq
+        {
+            public string candidate_id { get; set; } = null!;
+            public Boolean doc_upload { get; set; }
+        }
+
+        public class VerificationStatus
+        {
+            public int document_id { get; set; }
+            public string verification_status { get; set; } = null!;
+        }
     }
 }

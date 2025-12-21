@@ -57,7 +57,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("InterviewRounds/{job_id}")]
-        [Authorize(Roles = "Admin, Recruiter, Interviewer, HR")]
+        [Authorize(Roles = "Admin, Recruiter, Interviewer, HR, Viewer")]
         public async Task<IActionResult> fetchRounds(int job_id)
         {
             try
@@ -119,7 +119,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("CandidateInterviewSchedule")]
-        [Authorize(Roles = "Admin, Recruiter")]
+        [Authorize(Roles = "Admin, Recruiter, Viewer")]
         public async Task<IActionResult> fetchCandidateShedule(InterviewDtos.ListCandidateSheduleReq req)
         {
             try
@@ -255,7 +255,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetSelectedCandidates/{job_id}")]
-        [Authorize(Roles = "Admin, HR")]
+        [Authorize(Roles = "Admin, HR, Viewer")]
         public async Task<IActionResult> getSelectedCandidates(int job_id)
         {
             try

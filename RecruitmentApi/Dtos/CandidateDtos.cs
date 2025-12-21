@@ -13,6 +13,17 @@ namespace RecruitmentApi.Dtos
             public string email { get; set; } = null!;
         }
 
+        public class SelectedCandiadte
+        {
+            public string candidate_id { get; set; } = null!;
+
+            public string full_name { get; set; } = null!;
+
+            public string email { get; set; } = null!;
+
+            public Boolean doc_upload { get; set; }
+        }
+
         public class UploadCandidateResume
         {
             public string candidate_id { get; set; } = null!;

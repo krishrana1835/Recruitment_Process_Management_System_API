@@ -376,7 +376,7 @@ namespace RecruitmentApi.Services
             return schedule;
         }
 
-        public async Task<List<CandidateDtos.CandidateDto>> FetchSelectedCandidates(int job_id)
+        public async Task<List<CandidateDtos.SelectedCandiadte>> FetchSelectedCandidates(int job_id)
         {
             if (!await _context.Jobs.AnyAsync(i => i.job_id == job_id))
                 throw new NullReferenceException("Job does not exist");
@@ -386,11 +386,12 @@ namespace RecruitmentApi.Services
                 .MaxAsync(i => (int?)i.round_number);
 
             var candidates = await _context.Interviews.Where(i => i.job_id == job_id && i.status == "Selected" && i.round_number == lastRoundNumber)
-                .Select(r => new CandidateDtos.CandidateDto
+                .Select(r => new CandidateDtos.SelectedCandiadte
                 {
                     candidate_id = r.candidate_id,
                     full_name = r.candidate.full_name,
-                    email = r.candidate.email
+                    email = r.candidate.email,
+                    doc_upload = r.candidate.doc_upload
                 }).ToListAsync();
 
             return candidates;

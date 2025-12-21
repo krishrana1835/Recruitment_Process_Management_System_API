@@ -97,5 +97,52 @@ namespace RecruitmentApi.Services
             };
             return response;
         } 
+
+        public async Task<Boolean> FetchDocUploadStatus(string candidate_id)
+        {
+            if (candidate_id.IsNullOrEmpty())
+                throw new ArgumentException("Invalid candidate id");
+
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(i => i.candidate_id == candidate_id);
+
+            if (candidate == null)
+                throw new NullReferenceException("Caniddate does not exist");
+
+            return candidate.doc_upload;
+        }
+
+        public async Task<Candidate_DocumentDtos.ChangeStatusReq> UpdateDocUploadStatus(Candidate_DocumentDtos.ChangeStatusReq req)
+        {
+            if (req.candidate_id.IsNullOrEmpty())
+                throw new ArgumentException("Invalid candidate id");
+
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(i => i.candidate_id == req.candidate_id);
+
+            if (candidate == null)
+                throw new NullReferenceException("Caniddate does not exist");
+
+            candidate.doc_upload = req.doc_upload;
+
+            await _context.SaveChangesAsync();
+
+            return req;
+        }
+
+        public async Task<Candidate_DocumentDtos.VerificationStatus> UpdateVerificationStatus(Candidate_DocumentDtos.VerificationStatus req)
+        {
+            if (!(req.verification_status == "Pending" || req.verification_status == "Verified" || req.verification_status == "Rejected"))
+                throw new InvalidOperationException("Invalid status");
+
+            var doc = await _context.Candidate_Documents.FirstOrDefaultAsync(i => i.document_id == req.document_id);
+
+            if (doc == null)
+                throw new NullReferenceException("Document does not exist");
+
+            doc.verification_status = req.verification_status;
+
+            await _context.SaveChangesAsync();
+
+            return req;
+        }
     }
 }

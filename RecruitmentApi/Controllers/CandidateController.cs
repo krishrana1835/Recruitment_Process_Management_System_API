@@ -20,7 +20,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetCandidateList")]
-        [Authorize(Roles = "Admin,Recruiter")]
+        [Authorize(Roles = "Admin,Recruiter, Viewer")]
         public async Task<IActionResult> getListOfCandidates()
         {
             try
@@ -60,7 +60,7 @@ namespace RecruitmentApi.Controllers
         /// An <see cref="IActionResult"/> that represents the outcome of the operation.
         /// </returns>
         [HttpGet("GetCandidateProfile/{candidateId}")]
-        [Authorize(Roles = "Admin, Reviewer, Recruiter")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter, Viewer")]
         public async Task<IActionResult> GetCandidateProfile(string candidateId)
         {
             try
@@ -77,7 +77,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetCandidateDashboardProfile/{candidateId}")]
-        [Authorize(Roles = "Candidate, Reviewer")]
+        [Authorize(Roles = "Candidate, Reviewer, Viewer")]
         public async Task<IActionResult> GetCandidateDashProfile(string candidateId)
         {
             try

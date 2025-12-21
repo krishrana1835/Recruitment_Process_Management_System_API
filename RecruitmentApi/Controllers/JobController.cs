@@ -17,7 +17,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Candidate,Reviewer, Recruiter, Interviewer, HR")]
+        [Authorize(Roles = "Admin,Candidate,Reviewer, Recruiter, Interviewer, HR, Viewer")]
         public async Task<IActionResult> getAllJobs()
         {
             try
@@ -37,7 +37,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("{job_id:int}")]
-        [Authorize(Roles = "Admin,Candidate, Reviewer, Recruiter")]
+        [Authorize(Roles = "Admin,Candidate, Reviewer, Recruiter, Viewer")]
         public async Task<IActionResult> getJob(int job_id)
         {
             try

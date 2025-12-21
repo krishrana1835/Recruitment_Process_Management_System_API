@@ -102,7 +102,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("GetJobApplications")]
-        [Authorize(Roles = "Reviewer, Admin")]
+        [Authorize(Roles = "Reviewer, Admin, Viewer")]
         public async Task<IActionResult> getJobApplications([FromBody]Candidate_Status_HistoryDtos.JobapplicationRequest dto)
         {
             try

@@ -27,7 +27,7 @@ namespace RecruitmentApi.Controllers
         /// <returns>A list of all users.</returns>
         /// <response code="200">Returns a list of User objects.</response>
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Viewer")]
         public async Task<ActionResult<User?>> getAllUsers()
         {
             var users = await _userService.GetUserAsync();
@@ -54,7 +54,7 @@ namespace RecruitmentApi.Controllers
         /// <returns>A list of UserCreateDto objects containing simplified user information.</returns>
         /// <response code="200">Returns a list of UserCreateDto objects.</response>
         [HttpGet("GetUserInfo")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Viewer")]
         public async Task<ActionResult<UserDtos.UserCreateDto?>> getAllUsersSmallData()
         {
             var users = await _userService.GetAllUserInfoAsync();
@@ -62,7 +62,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetInterviewers")]
-        [Authorize(Roles = "Admin, Recruiter, Interviewer, HR")]
+        [Authorize(Roles = "Admin, Recruiter, Interviewer, HR, Viewer")]
         public async Task<IActionResult> getInterviewers()
         {
             try
@@ -93,7 +93,7 @@ namespace RecruitmentApi.Controllers
         /// <response code="400">If the user ID is not provided.</response>
         /// <response code="404">If no user is found with the specified ID.</response>
         [HttpGet("GetUserProfile/{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Viewer")]
         public async Task<ActionResult<UserDtos.UserProfileDto?>> getUserProfile(string id)
         {
             if (id == null)
@@ -105,7 +105,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetUserProfileToUpdate/{id}")]
-        [Authorize(Roles = "Admin, Reviewer, Recruiter, Interviewer, HR")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter, Interviewer, HR, Viewer")]
         public async Task<IActionResult> getUserProfileToUpdate(string id)
         {
             try
@@ -133,7 +133,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPut("UpdatePassword")]
-        [Authorize(Roles = "Admin, Reviewer, Recruiter, Interviewer, HR")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter, Interviewer, HR, Viewer")]
         public async Task<IActionResult> updateUserPassword(UserDtos.UpdateUserPassword dto)
         {
             try
