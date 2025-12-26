@@ -51,6 +51,9 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<EmailMessage> EmailMessages { get; set; }
+    public virtual DbSet<EmailRecipient> EmailRecipients { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=RecruitmentProcessManage;Trusted_Connection=True;");
 
@@ -486,6 +489,16 @@ public partial class AppDbContext : DbContext
                             .IsFixedLength();
                     });
         });
+
+        modelBuilder.Entity<EmailRecipient>()
+            .HasOne(r => r.EmailMessage)
+            .WithMany(e => e.Recipients)
+            .HasForeignKey(r => r.EmailMessageId);
+
+        modelBuilder.Entity<EmailRecipient>()
+            .HasOne(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.user_id);
 
         OnModelCreatingPartial(modelBuilder);
     }

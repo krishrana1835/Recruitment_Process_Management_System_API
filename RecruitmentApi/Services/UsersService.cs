@@ -222,6 +222,11 @@ namespace RecruitmentApi.Services
             if (dto.name.IsNullOrEmpty() || dto.email.IsNullOrEmpty())
                 throw new ArgumentException("One or more fields are empty");
 
+            var checkmail = await _context.Users.FirstOrDefaultAsync(u => u.email == dto.email);
+
+            if (checkmail != null)
+                throw new Exception("Email already in use");
+
             var user = await _context.Users.FirstOrDefaultAsync(r => r.user_id == dto.user_id);
 
             if (user == null)

@@ -147,7 +147,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPut("UpdateProfile")]
-        [Authorize(Roles = "Admin, Reviewer, Recruiter")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter, HR, Interviewer, Viewer")]
         public async Task<IActionResult> updateUserProfile(UserDtos.UserDto dto)
         {
             try

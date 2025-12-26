@@ -36,6 +36,30 @@ namespace RecruitmentApi.Controllers
             }
         }
 
+        [HttpGet("GetAllJobs")]
+        [Authorize(Roles = "Admin, HR")]
+        public async Task<IActionResult> GetAllJobs()
+        {
+            try
+            {
+                return Ok(new
+                {
+                    success = true,
+                    message = "All jobs successfully fetched",
+                    data = await _jobService.GetAllJobsAsync()
+                });
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured while fetching job list",
+                    error = ex.Message
+                });
+            }
+        }
+
         [HttpGet("{job_id:int}")]
         [Authorize(Roles = "Admin,Candidate, Reviewer, Recruiter, Viewer")]
         public async Task<IActionResult> getJob(int job_id)

@@ -1,9 +1,11 @@
 using System.Text;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RecruitmentApi.Data;
+using RecruitmentApi.HangFireJobs;
 using RecruitmentApi.Services;
 
 namespace RecruitmentApi
@@ -34,9 +36,21 @@ namespace RecruitmentApi
             builder.Services.AddScoped<InterviewFeedbackService>();
             builder.Services.AddScoped<HrReviewService>();
             builder.Services.AddScoped<RatingCardService>();
+            builder.Services.AddScoped<EmailService>();
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("dbConnection")));
+
+            builder.Services.AddHangfire(config =>
+                config.UseSqlServerStorage(
+                    builder.Configuration.GetConnectionString("dbConnection")));
+
+            builder.Services.AddHangfireServer();
+
+            builder.Services.AddScoped<IEmailJob, EmailJob>();
+            builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+
+
 
             // JWT Authentication
             var jwtKey = builder.Configuration["Jwt:Key"];
@@ -117,6 +131,8 @@ namespace RecruitmentApi
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
+
+            app.UseHangfireDashboard();
 
             app.UseHttpsRedirection();
 

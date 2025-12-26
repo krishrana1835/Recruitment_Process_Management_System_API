@@ -42,6 +42,16 @@ namespace RecruitmentApi.Services
             return jobs;
         }
 
+        public async Task<List<JobDtos.ListJobTitle>> GetJobtitlesAsync()
+        {
+            return await _context.Jobs.Select(r => new JobDtos.ListJobTitle
+            {
+                job_id = r.job_id,
+                job_title = r.job_title,
+                sheduled = r.scheduled,
+            }).ToListAsync();
+        }
+
         public async Task<JobDtos.UpdateJobDto> GetJobAsync(int job_id)
         {
 
