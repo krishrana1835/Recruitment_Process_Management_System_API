@@ -106,8 +106,8 @@ namespace RecruitmentApi.Services
                         // Map the related Skill entity to the SkillDto
                         skill = new SkillDtos.SkillDto
                         {
-                            skill_id = cs.skill.skill_id,
-                            skill_name = cs.skill.skill_name
+                            skill_id = cs.skill.SkillId,
+                            skill_name = cs.skill.SkillName
                         }
                     }).ToList(),
 

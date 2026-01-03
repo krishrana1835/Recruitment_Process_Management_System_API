@@ -42,14 +42,77 @@ namespace RecruitmentApi.Services
             return jobs;
         }
 
-        public async Task<List<JobDtos.ListJobTitle>> GetJobtitlesAsync()
+        public async Task<List<JobDtos.ListAllJobs>> GetScheduledJobs(string filter)
         {
-            return await _context.Jobs.Select(r => new JobDtos.ListJobTitle
+            if(filter == "Scheduled")
             {
-                job_id = r.job_id,
-                job_title = r.job_title,
-                sheduled = r.scheduled,
-            }).ToListAsync();
+                var jobs = await _context.Jobs
+                    .Include(j => j.status)
+                    .Where(j => j.status.status != "Closed" && j.scheduled == "Scheduled")
+                    .Select(s => new JobDtos.ListAllJobs
+                    {
+                        job_id = s.job_id,
+                        job_description = s.job_description,
+                        job_title = s.job_title,
+                        created_at = s.created_at,
+                        status_id = s.status_id,
+                        scheduled = s.scheduled,
+                        status = new Jobs_StatusDtos.ListAllJobs
+                        {
+                            status_id = s.status_id,
+                            status = s.status.status,
+                        }
+                    }).ToListAsync();
+                return jobs;
+            }
+            else if(filter == "All")
+            {
+                var jobs = await _context.Jobs
+                    .Include(j => j.status)
+                    .Where(j => j.status.status != "Closed")
+                    .Select(s => new JobDtos.ListAllJobs
+                    {
+                        job_id = s.job_id,
+                        job_description = s.job_description,
+                        job_title = s.job_title,
+                        created_at = s.created_at,
+                        status_id = s.status_id,
+                        scheduled = s.scheduled,
+                        status = new Jobs_StatusDtos.ListAllJobs
+                        {
+                            status_id = s.status_id,
+                            status = s.status.status,
+                        }
+                    }).ToListAsync();
+                return jobs;
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid filter");
+            }
+                
+        }
+
+        public async Task<List<JobDtos.ListJobTitle>> GetJobtitlesAsync(bool sorted)
+        {
+            var query = _context.Jobs
+                .Where(j =>
+                    j.scheduled == "Scheduled" &&
+                    j.status != null &&
+                    j.status.status != "Closed")
+                .Select(r => new JobDtos.ListJobTitle
+                {
+                    job_id = r.job_id,
+                    job_title = r.job_title,
+                    sheduled = r.scheduled
+                });
+
+            if (sorted)
+            {
+                query = query.OrderBy(j => j.job_title);
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<JobDtos.UpdateJobDto> GetJobAsync(int job_id)

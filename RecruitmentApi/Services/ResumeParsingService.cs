@@ -53,7 +53,7 @@ namespace RecruitmentApi.Services
             try
             {
                 //Fetch skill list from DB
-                var skills = await _context.Skills.Select(s => s.skill_name).ToListAsync();
+                var skills = await _context.Skills.Select(s => s.SkillName).ToListAsync();
                 var skillsCsv = string.Join(",", skills);
 
                 //Correct Python script path (Services\Python)
@@ -115,10 +115,10 @@ namespace RecruitmentApi.Services
             {
                 // Load skills from DB
                 var skillEntities = await _context.Skills
-                    .Select(s => new { s.skill_id, s.skill_name })
+                    .Select(s => new { s.SkillId, s.SkillName })
                     .ToListAsync();
 
-                var allSkillsCsv = string.Join(",", skillEntities.Select(s => s.skill_name));
+                var allSkillsCsv = string.Join(",", skillEntities.Select(s => s.SkillName));
 
                 var scriptPath = Path.Combine(
                     _env.ContentRootPath,
@@ -158,7 +158,7 @@ namespace RecruitmentApi.Services
 
                 // Map to DB skill IDs
                 var matchedSkills = skillEntities
-                    .Where(db => detectedSkillNames.Contains(db.skill_name, StringComparer.OrdinalIgnoreCase))
+                    .Where(db => detectedSkillNames.Contains(db.SkillName, StringComparer.OrdinalIgnoreCase))
                     .ToList();
 
                 // Build final response

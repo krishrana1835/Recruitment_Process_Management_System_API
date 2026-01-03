@@ -100,6 +100,21 @@ namespace RecruitmentApi.Services
 
             await _context.SaveChangesAsync();
         }
+        public class Recipients
+        {
+            public string email { get; set; } = null!;
+            public RecipientType type { get; set; }
+        }
+        public async Task<List<Recipients>> GetRecipientsAsync(int id)
+        {
+            var email = await _context.EmailRecipients.Where(r => r.EmailMessageId == id)
+                .Select(r => new Recipients
+                {
+                    email = r.email,
+                    type = r.Type
+                }).ToListAsync();
+            return email;
+        }
     }
 
 }

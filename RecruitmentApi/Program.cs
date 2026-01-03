@@ -49,6 +49,7 @@ namespace RecruitmentApi
 
             builder.Services.AddScoped<IEmailJob, EmailJob>();
             builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+            builder.Services.AddScoped<ReportServices>();
 
 
 

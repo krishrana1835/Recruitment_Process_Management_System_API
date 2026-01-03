@@ -17,7 +17,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Candidate,Reviewer, Recruiter, Interviewer, HR, Viewer")]
+        [Authorize(Roles = "Admin, Candidate, Reviewer, Recruiter, Interviewer, HR, Viewer")]
         public async Task<IActionResult> getAllJobs()
         {
             try
@@ -36,9 +36,34 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("GetAllJobs")]
+        [HttpGet("GetScheduledJobs/{filter}")]
+        [Authorize(Roles = "Admin, Candidate,Reviewer, Recruiter, Interviewer, HR, Viewer")]
+        public async Task<IActionResult> getScheduledJobs(string filter)
+        {
+            try
+            {
+                var res = await _jobService.GetScheduledJobs(filter);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Jobs successfully fetched",
+                    data = res
+                });
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured while fetchng jobs",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("GetAllJobs/{sorted}")]
         [Authorize(Roles = "Admin, HR")]
-        public async Task<IActionResult> GetAllJobs()
+        public async Task<IActionResult> GetAllJobs(bool sorted)
         {
             try
             {
@@ -46,7 +71,7 @@ namespace RecruitmentApi.Controllers
                 {
                     success = true,
                     message = "All jobs successfully fetched",
-                    data = await _jobService.GetAllJobsAsync()
+                    data = await _jobService.GetJobtitlesAsync(sorted)
                 });
             }
             catch(Exception ex)

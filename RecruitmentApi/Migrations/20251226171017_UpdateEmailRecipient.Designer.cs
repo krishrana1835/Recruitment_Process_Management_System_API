@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecruitmentApi.Data;
 
@@ -11,9 +12,11 @@ using RecruitmentApi.Data;
 namespace RecruitmentApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251226171017_UpdateEmailRecipient")]
+    partial class UpdateEmailRecipient
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -713,20 +716,20 @@ namespace RecruitmentApi.Migrations
 
             modelBuilder.Entity("RecruitmentApi.Models.Skill", b =>
                 {
-                    b.Property<int>("SkillId")
+                    b.Property<int>("skill_id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SkillId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("skill_id"));
 
-                    b.Property<string>("SkillName")
+                    b.Property<string>("skill_name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.HasKey("SkillId");
+                    b.HasKey("skill_id");
 
-                    b.HasIndex(new[] { "SkillName" }, "UQ_Skills_Name")
+                    b.HasIndex(new[] { "skill_name" }, "UQ_Skills_Name")
                         .IsUnique();
 
                     b.ToTable("Skills");
@@ -851,7 +854,7 @@ namespace RecruitmentApi.Migrations
                         .HasConstraintName("FK_Candidate_Skills_Candidates");
 
                     b.HasOne("RecruitmentApi.Models.Skill", "skill")
-                        .WithMany("CandidateSkills")
+                        .WithMany("Candidate_Skills")
                         .HasForeignKey("skill_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -1033,7 +1036,7 @@ namespace RecruitmentApi.Migrations
                         .HasConstraintName("FK_Jobs_Skills_Jobs");
 
                     b.HasOne("RecruitmentApi.Models.Skill", "skill")
-                        .WithMany("JobsSkills")
+                        .WithMany("Jobs_Skills")
                         .HasForeignKey("skill_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -1140,9 +1143,9 @@ namespace RecruitmentApi.Migrations
 
             modelBuilder.Entity("RecruitmentApi.Models.Skill", b =>
                 {
-                    b.Navigation("CandidateSkills");
+                    b.Navigation("Candidate_Skills");
 
-                    b.Navigation("JobsSkills");
+                    b.Navigation("Jobs_Skills");
                 });
 
             modelBuilder.Entity("RecruitmentApi.Models.User", b =>

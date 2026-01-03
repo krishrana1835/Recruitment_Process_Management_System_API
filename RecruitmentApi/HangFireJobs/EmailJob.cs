@@ -33,7 +33,6 @@ namespace RecruitmentApi.HangFireJobs
         {
             var email = await _db.EmailMessages
                 .Include(e => e.Recipients)
-                    .ThenInclude(r => r.User)
                 .FirstOrDefaultAsync(e => e.Id == emailMessageId);
 
             if (DateTime.UtcNow < email.ScheduledAt)
@@ -44,12 +43,12 @@ namespace RecruitmentApi.HangFireJobs
 
             var toEmails = email.Recipients
                 .Where(r => r.Type == RecipientType.To)
-                .Select(r => r.User.email)
+                .Select(r => r.email)
                 .ToList();
 
             var ccEmails = email.Recipients
                 .Where(r => r.Type == RecipientType.Cc)
-                .Select(r => r.User.email)
+                .Select(r => r.email)
                 .ToList();
 
             await _emailSender.SendAsync(

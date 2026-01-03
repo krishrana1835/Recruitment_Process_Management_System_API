@@ -151,7 +151,7 @@ namespace RecruitmentApi.Services
                 var dto = new Interview_FeedBackDtos.SkillReviewDto
                 {
                     skill_id = candidateSkill.skill_id,
-                    skill_name = candidateSkill.skill.skill_name,
+                    skill_name = candidateSkill.skill.SkillName,
                     skill_type = skillType,
                     review = new Interview_FeedBackDtos.SkillReviewDataDto
                     {

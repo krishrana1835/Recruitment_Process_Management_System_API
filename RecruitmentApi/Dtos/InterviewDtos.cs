@@ -25,6 +25,12 @@ namespace RecruitmentApi.Dtos
             public List<ListOfRounds> roundData { get; set; } = new();
         }
 
+        public class InterviewerInfo
+        {
+            public string user_id { get; set; } = null!;
+            public string name { get; set; } = null!;
+            public List<string> role { get; set; } = new();
+        }
         public class ListOfRounds
         {
             public int round_number { get; set; }

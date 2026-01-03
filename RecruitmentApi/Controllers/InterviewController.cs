@@ -85,6 +85,30 @@ namespace RecruitmentApi.Controllers
             }
         }
 
+        [HttpGet("GetAllInterviewers/{job_id}")]
+        public async Task<IActionResult> GetInterviewers(int job_id)
+        {
+            try
+            {
+                var res = await _scheduleService.GetAllInterviewers(job_id);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Interviewers fetched successfully",
+                    data = res
+                });
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured while fetchig interviewers",
+                    error = ex.Message
+                });
+            }
+        }
+
         [HttpGet("JobSkills/{job_id}")]
         [Authorize(Roles = "Admin, Interviewer")]
         public async Task<IActionResult> fetchJobSkills(int job_id)
@@ -113,6 +137,40 @@ namespace RecruitmentApi.Controllers
                 {
                     success = false,
                     message = "An error occurred while fetching job skills.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("GetAllShorlistedCandidates/{job_id}")]
+        [Authorize(Roles = "Admin, Reviewer, Recruiter, Viewer")]
+        public async Task<IActionResult> getAllShortlistedCandidates(int job_id)
+        {
+            try
+            {
+                var res = await _scheduleService.GetAllShortlistedCandidates(job_id);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Candidates fetched successfully",
+                    data = res
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "An error occurred while fetching candidates",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while fetching candidates",
                     error = ex.Message
                 });
             }

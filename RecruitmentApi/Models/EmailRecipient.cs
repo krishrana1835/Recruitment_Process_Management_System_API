@@ -14,8 +14,7 @@
         public int EmailMessageId { get; set; }
         public EmailMessage EmailMessage { get; set; }
 
-        public string user_id { get; set; } = null!;
-        public User User { get; set; }
+        public string email { get; set; } = null!;
 
         public RecipientType Type { get; set; }
     }

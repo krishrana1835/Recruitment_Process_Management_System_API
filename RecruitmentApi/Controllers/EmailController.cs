@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using RecruitmentApi.Data;
 using RecruitmentApi.Dtos;
 using RecruitmentApi.HangFireJobs;
@@ -69,19 +70,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        public class EmailSchedulerRequest
-        {
-            public string Subject { get; set; } = string.Empty;
-            public string Body { get; set; } = string.Empty;
-            public List<string> ToUserIds { get; set; } = new();
-            public List<string> CcUserIds { get; set; } = new();
-
-            public DateTime ScheduledAt { get; set; }
-        }
-
         [HttpPost("EmailScheduler")]
         [Authorize(Roles = "Admin, HR")]
-        public async Task<IActionResult> SendEmail([FromBody] EmailSchedulerRequest request)
+        public async Task<IActionResult> SendEmail([FromBody] EmailDtos.EmailSchedulerRequest request)
         {
             var email = new EmailMessage
             {
@@ -92,33 +83,198 @@ namespace RecruitmentApi.Controllers
                 Recipients = new List<EmailRecipient>()
             };
 
-            request.ToUserIds.ForEach(id =>
-                email.Recipients.Add(new EmailRecipient
-                {
-                    user_id = id,
-                    Type = RecipientType.To
-                }));
 
-            request.CcUserIds.ForEach(id =>
-                email.Recipients.Add(new EmailRecipient
-                {
-                    user_id = id,
-                    Type = RecipientType.Cc
-                }));
-
-            _db.EmailMessages.Add(email);
-            await _db.SaveChangesAsync();
-
-            BackgroundJob.Schedule<IEmailJob>(
-                job => job.SendEmail(email.Id),
-                request.ScheduledAt);
-
-            return Ok(new
+            try
             {
-                success = true,
-                message = "Email successfully scheduled.",
-                data=true
-            });
+                foreach (var id in request.ToUserIds)
+                {
+                    var mail = await _db.Users.FirstOrDefaultAsync(i => i.user_id == id) ?? throw new NullReferenceException("User does not exist");
+                    email.Recipients.Add(new EmailRecipient
+                    {
+                        email = mail.email,
+                        Type = RecipientType.To
+                    });
+                }
+
+                foreach (var id in request.CcUserIds)
+                {
+                    var mail = await _db.Users.FirstOrDefaultAsync(i => i.user_id == id) ?? throw new NullReferenceException("User does not exist");
+                    email.Recipients.Add(new EmailRecipient
+                    {
+                        email = mail.email,
+                        Type = RecipientType.Cc
+                    });
+                }
+
+                _db.EmailMessages.Add(email);
+                await _db.SaveChangesAsync();
+
+                BackgroundJob.Schedule<IEmailJob>(
+                    job => job.SendEmail(email.Id),
+                    request.ScheduledAt);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Email successfully scheduled.",
+                    data = true
+                });
+            }
+            catch(NullReferenceException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "An error occured while scheduling email",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500,new
+                {
+                    success = false,
+                    message = "An error occured while scheduling email",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("AutoMail/EmailScheduler")]
+        [Authorize(Roles = "Admin, HR")]
+        public async Task<IActionResult> SendAutoMail([FromBody] EmailDtos.AutoMailReq request)
+        {
+            var email = new EmailMessage
+            {
+                Subject = request.Subject,
+                Body = request.Body,
+                CreatedAt = DateTime.UtcNow,
+                ScheduledAt = request.scheduledAt,
+                Recipients = new List<EmailRecipient>()
+            };
+
+            try
+            {
+                var t1 = request.To.Contains("All Interviewers & HR");
+                if (t1 || request.Cc.Contains("All Interviewers & HR"))
+                {
+                    var emails = await _db.Interviews
+                        .Where(j => j.job_id == request.JobId)
+                        .SelectMany(u => u.users)
+                        .Select(e => e.email)
+                        .Distinct()
+                        .ToListAsync();
+
+                    foreach (var id in emails)
+                    {
+                        email.Recipients.Add(new EmailRecipient
+                        {
+                            email = id,
+                            Type = t1 ? RecipientType.To : RecipientType.Cc
+                        });
+                    }
+
+                }
+                var t2 = request.To.Contains("All Candidates");
+                if (t2 || request.Cc.Contains("All Candidates"))
+                {
+                    var emails = await _db.Interviews
+                        .Where(i => i.job_id == request.JobId && i.round_number == 1)
+                        .Select(c => c.candidate.email)
+                        .Distinct()
+                        .ToListAsync();
+
+                    foreach (var id in emails)
+                    {
+                        email.Recipients.Add(new EmailRecipient
+                        {
+                            email = id,
+                            Type = t2 ? RecipientType.To : RecipientType.Cc
+                        });
+                    }
+                }
+                var t3 = request.To.Contains("Selected Candidates");
+                if ( t3 || request.Cc.Contains("Selected Candidates"))
+                {
+                    var max = await _db.Interviews
+                        .Where(j => j.job_id == request.JobId)
+                        .Select(r => r.round_number)
+                        .Distinct()
+                        .OrderDescending()
+                        .FirstOrDefaultAsync();
+                    var emails = await _db.Interviews
+                        .Where(i => i.job_id == request.JobId && i.round_number == max && i.status == "Selected")
+                        .Select(c => c.candidate.email)
+                        .Distinct()
+                        .ToListAsync();
+
+                    foreach (var id in emails)
+                    {
+                        email.Recipients.Add(new EmailRecipient
+                        {
+                            email = id,
+                            Type = t3 ? RecipientType.To : RecipientType.Cc
+                        });
+                    }
+                }
+
+                _db.EmailMessages.Add(email);
+                await _db.SaveChangesAsync();
+
+                BackgroundJob.Schedule<IEmailJob>(
+                    job => job.SendEmail(email.Id),
+                    request.scheduledAt);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Email successfully scheduled.",
+                    data = true
+                });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "An error occured while scheduling email",
+                    error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured while scheduling email",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("GetRecpients/{id}")]
+        [Authorize(Roles = "Admin, HR")]
+        public async Task<IActionResult> GetAllRecipients(int id)
+        {
+            try
+            {
+                var res = await _service.GetRecipientsAsync(id);
+                return Ok(new
+                {
+                    success = true,
+                    message = "All recipients fetched successfully",
+                    data = res
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured while scheduling email",
+                    error = ex.Message
+                });
+            }
         }
 
         [HttpGet("GetAllMails")]

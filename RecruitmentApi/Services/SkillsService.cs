@@ -26,8 +26,8 @@ namespace RecruitmentApi.Services
                 throw new Exception("No Skills in database");
             var skillsdata = skills.Select(r => new SkillDtos.SkillDto
             {
-                skill_id = r.skill_id,
-                skill_name = r.skill_name,
+                skill_id = r.SkillId,
+                skill_name = r.SkillName,
             }).ToList();
             return skillsdata;
         }
@@ -37,14 +37,14 @@ namespace RecruitmentApi.Services
             if(skill.IsNullOrEmpty())
                 throw new ArgumentException("Invalid input");
 
-            var skills = await _context.Skills.AnyAsync(s => s.skill_name == skill);
+            var skills = await _context.Skills.AnyAsync(s => s.SkillName == skill);
 
             if (skills)
                 throw new InvalidOperationException("Skill already exist");
 
             var data = new Skill
             {
-                skill_name = skill,
+                SkillName = skill,
             };
 
             await _context.Skills.AddAsync(data);
@@ -52,8 +52,8 @@ namespace RecruitmentApi.Services
 
             var response = await _context.Skills.Select(r => new SkillDtos.SkillDto
             {
-                skill_id = r.skill_id,
-                skill_name = r.skill_name,
+                skill_id = r.SkillId,
+                skill_name = r.SkillName,
             }).ToListAsync();
 
             return response;
@@ -65,23 +65,23 @@ namespace RecruitmentApi.Services
             if (req.skill_name.IsNullOrEmpty())
                 throw new ArgumentException("Skill name is empty");
 
-            var skill = await _context.Skills.FirstOrDefaultAsync(i => i.skill_id == req.skill_id);
+            var skill = await _context.Skills.FirstOrDefaultAsync(i => i.SkillId == req.skill_id);
             if(skill==null) throw new NullReferenceException("Invalid skill id");
 
-            skill.skill_name = req.skill_name;
+            skill.SkillName = req.skill_name;
             await _context.SaveChangesAsync();
 
             return new SkillDtos.SkillDto
             {
-                skill_id = skill.skill_id,
-                skill_name = skill.skill_name,
+                skill_id = skill.SkillId,
+                skill_name = skill.SkillName,
             };
         }
 
         public async Task<Boolean> deleteSkill(int skill_id)
         {
 
-            var skill = await _context.Skills.FirstOrDefaultAsync(i => i.skill_id == skill_id);
+            var skill = await _context.Skills.FirstOrDefaultAsync(i => i.SkillId == skill_id);
             if (skill == null) throw new NullReferenceException("Invalid skill id");
 
             _context.Skills.Remove(skill);

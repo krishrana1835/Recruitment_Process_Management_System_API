@@ -5,11 +5,11 @@ namespace RecruitmentApi.Models;
 
 public partial class Skill
 {
-    public int skill_id { get; set; }
+    public int SkillId { get; set; }
 
-    public string skill_name { get; set; } = null!;
+    public string SkillName { get; set; } = null!;
 
-    public virtual ICollection<Candidate_Skill> Candidate_Skills { get; set; } = new List<Candidate_Skill>();
+    public virtual ICollection<Candidate_Skill> CandidateSkills { get; set; } = new List<Candidate_Skill>();
 
-    public virtual ICollection<Jobs_Skill> Jobs_Skills { get; set; } = new List<Jobs_Skill>();
+    public virtual ICollection<Jobs_Skill> JobsSkills { get; set; } = new List<Jobs_Skill>();
 }

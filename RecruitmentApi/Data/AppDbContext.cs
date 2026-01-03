@@ -140,7 +140,7 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.candidate_id)
                 .HasConstraintName("FK_Candidate_Skills_Candidates");
 
-            entity.HasOne(d => d.skill).WithMany(p => p.Candidate_Skills)
+            entity.HasOne(d => d.skill).WithMany(p => p.CandidateSkills)
                 .HasForeignKey(d => d.skill_id)
                 .HasConstraintName("FK_Candidate_Skills_Skills");
         });
@@ -374,7 +374,7 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.job_id)
                 .HasConstraintName("FK_Jobs_Skills_Jobs");
 
-            entity.HasOne(d => d.skill).WithMany(p => p.Jobs_Skills)
+            entity.HasOne(d => d.skill).WithMany(p => p.JobsSkills)
                 .HasForeignKey(d => d.skill_id)
                 .HasConstraintName("FK_Jobs_Skills_Skills");
         });
@@ -447,11 +447,11 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Skill>(entity =>
         {
-            entity.HasKey(e => e.skill_id);
+            entity.HasKey(e => e.SkillId);
 
-            entity.HasIndex(e => e.skill_name, "UQ_Skills_Name").IsUnique();
+            entity.HasIndex(e => e.SkillName, "UQ_Skills_Name").IsUnique();
 
-            entity.Property(e => e.skill_name).HasMaxLength(100);
+            entity.Property(e => e.SkillName).HasMaxLength(100);
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -494,11 +494,6 @@ public partial class AppDbContext : DbContext
             .HasOne(r => r.EmailMessage)
             .WithMany(e => e.Recipients)
             .HasForeignKey(r => r.EmailMessageId);
-
-        modelBuilder.Entity<EmailRecipient>()
-            .HasOne(r => r.User)
-            .WithMany()
-            .HasForeignKey(r => r.user_id);
 
         OnModelCreatingPartial(modelBuilder);
     }

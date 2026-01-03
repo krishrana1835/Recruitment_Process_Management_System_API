@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.IdentityModel.Tokens;
+using NuGet.DependencyResolver;
 using RecruitmentApi.Data;
 using RecruitmentApi.Dtos;
 using RecruitmentApi.Models;
@@ -49,25 +51,52 @@ namespace RecruitmentApi.Services
 
             var latestStatus = _context.Candidate_Status_Histories
                 .Where(r => r.job_id == job_id)
-                .GroupBy(r => r.candidate_id)
+                .GroupBy(r => new { r.candidate_id, r.job_id })
                 .Select(g => new
                 {
-                    CandidateId = g.Key,
+                    g.Key.candidate_id,
+                    g.Key.job_id,
                     LatestChangedAt = g.Max(r => r.changed_at)
                 });
 
             var shortlisted = await _context.Candidate_Status_Histories
                 .Join(
                     latestStatus,
-                    history => new { history.candidate_id, history.changed_at },
-                    latest => new { candidate_id = latest.CandidateId, changed_at = latest.LatestChangedAt },
+                    history => new { history.candidate_id, history.job_id, history.changed_at },
+                    latest => new { latest.candidate_id, latest.job_id, changed_at = latest.LatestChangedAt },
                     (history, latest) => history
                 )
                 .Where(r => r.status == "Shortlisted")
                 .Select(r => r.candidate_id)
                 .ToListAsync();
 
+            if (!shortlisted.Any())
+                throw new Exception("No shortlisted candidates found for this job");
+
             return shortlisted;
+        }
+
+        public async Task<List<CandidateDtos.UpdateCandidateDto>> GetAllShortlistedCandidates(int job_id)
+        {
+            if (!await _context.Jobs.AnyAsync(j => j.job_id == job_id))
+                throw new NullReferenceException("Job does not exist");
+            var candidates = await GetShortlistedCandidates(job_id);
+
+            List<CandidateDtos.UpdateCandidateDto> clist = [];
+            foreach(var c in candidates)
+            {
+                var candidate = await _context.Candidates.FirstOrDefaultAsync(i => i.candidate_id == c) ?? throw new NullReferenceException("Candidate does not exist");
+                clist.Add(new CandidateDtos.UpdateCandidateDto
+                {
+                    candidate_id = candidate.candidate_id,
+                    full_name = candidate.full_name,
+                    email = candidate.email,
+                    phone = candidate.phone,
+                    resume_path = candidate.resume_path,
+                });
+            }
+
+            return clist;
         }
 
         public async Task<Boolean> ScheduleInterviews(ScheduleInterviewRequestDto request)
@@ -93,7 +122,9 @@ namespace RecruitmentApi.Services
                 candidates = await _context.Interviews.Where(i => i.job_id == request.job_id && i.round_number == request.result_of && i.status == "Selected").Select(u => u.candidate_id).ToListAsync();
             }
 
-                int panels = interviewers_sorted.Count;
+            Console.WriteLine($"Candidates found: {string.Join(",", candidates)}");
+
+            int panels = interviewers_sorted.Count;
             int total_candidates = candidates.Count;
             int total_slots = (int)Math.Ceiling(total_candidates / (double)panels);
 
@@ -185,7 +216,7 @@ namespace RecruitmentApi.Services
                 }
             }
 
-            job.scheduled = "Sheduled";
+            job.scheduled = "Scheduled";
 
             await _context.SaveChangesAsync();
             return true;
@@ -232,10 +263,34 @@ namespace RecruitmentApi.Services
             var skills = await _context.Jobs_Skills.Where(j => j.job_id == job_id).Include(j => j.skill).Select(r => new SkillDtos.SkillDto
             {
                 skill_id = r.skill_id,
-                skill_name = r.skill.skill_name
+                skill_name = r.skill.SkillName
             }).ToListAsync();
 
             return skills;
+        }
+
+        public async Task<List<InterviewDtos.InterviewerInfo>> GetAllInterviewers(int job_id)
+        {
+            if (!await _context.Jobs.AnyAsync(j => j.job_id == job_id))
+                throw new NullReferenceException("Job does not exist");
+
+            var interviewers = await _context.Interviews
+                .Where(i => i.job_id == job_id)
+                .SelectMany(i => i.users)
+                .GroupBy(u => new { u.user_id, u.name }) // group by user
+                .Select(g => new InterviewDtos.InterviewerInfo
+                {
+                    user_id = g.Key.user_id,
+                    name = g.Key.name,
+                    role = g.SelectMany(u => u.roles)
+                            .Select(r => r.role_name)
+                            .Distinct()
+                            .ToList() // collect all roles per user
+                })
+                .ToListAsync();
+
+
+            return interviewers;
         }
 
         public async Task UpdateCandidateInterviewStatus(int interview_id, string status)
@@ -441,8 +496,8 @@ namespace RecruitmentApi.Services
                         skill_type = r.skill_type,
                         skill = new SkillDtos.SkillDto
                         {
-                            skill_id = r.skill.skill_id,
-                            skill_name = r.skill.skill_name,
+                            skill_id = r.skill.SkillId,
+                            skill_name = r.skill.SkillName,
                         }
                     })
                     .ToListAsync();
@@ -459,8 +514,8 @@ namespace RecruitmentApi.Services
                     skill_id = r.skill_id,
                     skill = new SkillDtos.SkillDto
                     {
-                        skill_id = r.skill.skill_id,
-                        skill_name = r.skill.skill_name
+                        skill_id = r.skill.SkillId,
+                        skill_name = r.skill.SkillName
                     }
                 })
                 .ToListAsync();

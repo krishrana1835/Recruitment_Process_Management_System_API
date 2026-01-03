@@ -77,7 +77,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetCandidateDashboardProfile/{candidateId}")]
-        [Authorize(Roles = "Candidate, Reviewer, Viewer")]
+        [Authorize(Roles = "Candidate, Reviewer, Viewer, Admin")]
         public async Task<IActionResult> GetCandidateDashProfile(string candidateId)
         {
             try
@@ -152,7 +152,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPut("UpdateCandidateDashboardProfile")]
-        [Authorize(Roles = "Candidate")]
+        [Authorize(Roles = "Candidate, Admin")]
         public async Task<IActionResult> UpdateCandidateDashProfile([FromBody] CandidateDtos.CandidateDashboardProfile candidateId)
         {
             try

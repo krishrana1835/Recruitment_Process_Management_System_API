@@ -66,8 +66,8 @@ namespace RecruitmentApi.Services
                             candidate_skill_id = f.candidate_skill_id,
                             skill = new SkillDtos.SkillDto
                             {
-                                skill_id = f.candidate_skill.skill.skill_id,
-                                skill_name = f.candidate_skill.skill.skill_name
+                                skill_id = f.candidate_skill.skill.SkillId,
+                                skill_name = f.candidate_skill.skill.SkillName
                             }
                         }
                     }).ToList(),
@@ -160,8 +160,8 @@ namespace RecruitmentApi.Services
                             candidate_skill_id = f.candidate_skill_id,
                             skill = new SkillDtos.SkillDto
                             {
-                                skill_id = f.candidate_skill.skill.skill_id,
-                                skill_name = f.candidate_skill.skill.skill_name
+                                skill_id = f.candidate_skill.skill.SkillId,
+                                skill_name = f.candidate_skill.skill.SkillName
                             }
                         }
                     }).ToList(),
