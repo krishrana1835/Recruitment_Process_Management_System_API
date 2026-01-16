@@ -110,7 +110,7 @@ namespace RecruitmentApi.Services
             var email = await _context.EmailRecipients.Where(r => r.EmailMessageId == id)
                 .Select(r => new Recipients
                 {
-                    email = r.email,
+                    email = r.Email,
                     type = r.Type
                 }).ToListAsync();
             return email;

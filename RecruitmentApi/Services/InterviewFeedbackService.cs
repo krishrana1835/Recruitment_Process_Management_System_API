@@ -15,10 +15,10 @@ namespace RecruitmentApi.Services
 
         public async Task AddOrUpdateCandidateFeedback(Interview_FeedBackDtos.InterviewSkillSubmissionDto req)
         {
-            var interview = await _context.Interviews.FirstOrDefaultAsync(i => i.interview_id == req.interview_id);
+            var interview = await _context.Interviews.FirstOrDefaultAsync(i => i.InterviewId == req.interview_id);
             if (interview == null)
                 throw new NullReferenceException("Interview does not exist");
-            interview.score = req.total_score;
+            interview.Score = req.total_score;
             await _context.SaveChangesAsync();
 
             async Task ProcessSkills(List<Interview_FeedBackDtos.SkillReviewDto> skills)
@@ -27,16 +27,16 @@ namespace RecruitmentApi.Services
                 {
                     var candidateSkill = await _context.Candidate_Skills
                         .FirstOrDefaultAsync(cs =>
-                            cs.candidate_id == req.candidate_id &&
-                            cs.skill_id == skill.skill_id);
+                            cs.CandidateId == req.candidate_id &&
+                            cs.SkillId == skill.skill_id);
 
                     if (candidateSkill == null)
                     {
                         candidateSkill = new Candidate_Skill
                         {
-                            years_experience = skill.review.yearsOfExperience,
-                            skill_id = skill.skill_id,
-                            candidate_id = req.candidate_id
+                            YearsExperience = skill.review.yearsOfExperience,
+                            SkillId = skill.skill_id,
+                            CandidateId = req.candidate_id
                         };
 
                         _context.Candidate_Skills.Add(candidateSkill);
@@ -44,37 +44,37 @@ namespace RecruitmentApi.Services
                     }
                     else
                     {
-                        candidateSkill.years_experience = skill.review.yearsOfExperience;
+                        candidateSkill.YearsExperience = skill.review.yearsOfExperience;
                         _context.Candidate_Skills.Update(candidateSkill);
                     }
 
                     var feedback = await _context.Interview_Feedbacks
                         .FirstOrDefaultAsync(f =>
-                            f.interview_id == req.interview_id &&
-                            f.user_id == req.user_id &&
-                            f.candidate_skill_id == candidateSkill.candidate_skill_id);
+                            f.InterviewId == req.interview_id &&
+                            f.UserId == req.user_id &&
+                            f.CandidateSkillId == candidateSkill.CandidateSkillId);
 
                     if (feedback == null)
                     {
                         feedback = new Interview_Feedback
                         {
-                            concept_rating = skill.review.conceptRating,
-                            technical_rating = skill.review.technicalRating,
-                            comments = skill.review.comments,
-                            feedback_at = DateTime.Now,
-                            interview_id = req.interview_id,
-                            user_id = req.user_id,
-                            candidate_skill_id = candidateSkill.candidate_skill_id
+                            ConceptRating = skill.review.conceptRating,
+                            TechnicalRating = skill.review.technicalRating,
+                            Comments = skill.review.comments,
+                            FeedbackAt = DateTime.Now,
+                            InterviewId = req.interview_id,
+                            UserId = req.user_id,
+                            CandidateSkillId = candidateSkill.CandidateSkillId
                         };
 
                         _context.Interview_Feedbacks.Add(feedback);
                     }
                     else
                     {
-                        feedback.concept_rating = skill.review.conceptRating;
-                        feedback.technical_rating = skill.review.technicalRating;
-                        feedback.comments = skill.review.comments;
-                        feedback.feedback_at = DateTime.Now;
+                        feedback.ConceptRating = skill.review.conceptRating;
+                        feedback.TechnicalRating = skill.review.technicalRating;
+                        feedback.Comments = skill.review.comments;
+                        feedback.FeedbackAt = DateTime.Now;
 
                         _context.Interview_Feedbacks.Update(feedback);
                     }
@@ -96,16 +96,16 @@ namespace RecruitmentApi.Services
         public async Task<Interview_FeedBackDtos.InterviewSkillSubmissionDto> GetCandidateFeedbackForInterview(int interviewId, string userId)
         {
             var interview = await _context.Interviews
-                .FirstOrDefaultAsync(i => i.interview_id == interviewId);
+                .FirstOrDefaultAsync(i => i.InterviewId == interviewId);
 
             if (interview == null)
                 throw new NullReferenceException("Interview not found");
 
-            string candidateId = interview.candidate_id;
-            int jobId = interview.job_id;
+            string candidateId = interview.CandidateId;
+            int jobId = interview.JobId;
 
             var feedbacks = await _context.Interview_Feedbacks
-                .Where(f => f.interview_id == interviewId && f.user_id == userId)
+                .Where(f => f.InterviewId == interviewId && f.UserId == userId)
                 .ToListAsync();
 
             if (!feedbacks.Any())
@@ -116,15 +116,15 @@ namespace RecruitmentApi.Services
                     candidate_id = candidateId
                 };
 
-            var candidateSkillIds = feedbacks.Select(f => f.candidate_skill_id).ToList();
+            var candidateSkillIds = feedbacks.Select(f => f.CandidateSkillId).ToList();
 
             var candidateSkills = await _context.Candidate_Skills
-                .Where(cs => candidateSkillIds.Contains(cs.candidate_skill_id))
-                .Include(cs => cs.skill)
+                .Where(cs => candidateSkillIds.Contains(cs.CandidateSkillId))
+                .Include(cs => cs.Skill)
                 .ToListAsync();
 
             var jobSkills = await _context.Jobs_Skills
-                .Where(js => js.job_id == jobId)
+                .Where(js => js.JobId == jobId)
                 .ToListAsync();
 
             var response = new Interview_FeedBackDtos.InterviewSkillSubmissionDto
@@ -140,25 +140,25 @@ namespace RecruitmentApi.Services
             foreach (var feedback in feedbacks)
             {
                 var candidateSkill = candidateSkills
-                    .FirstOrDefault(cs => cs.candidate_skill_id == feedback.candidate_skill_id);
+                    .FirstOrDefault(cs => cs.CandidateSkillId == feedback.CandidateSkillId);
 
                 if (candidateSkill == null)
                     continue;
 
-                var jobSkill = jobSkills.FirstOrDefault(js => js.skill_id == candidateSkill.skill_id);
-                string skillType = jobSkill?.skill_type ?? "E";
+                var jobSkill = jobSkills.FirstOrDefault(js => js.SkillId == candidateSkill.SkillId);
+                string skillType = jobSkill?.SkillType ?? "E";
 
                 var dto = new Interview_FeedBackDtos.SkillReviewDto
                 {
-                    skill_id = candidateSkill.skill_id,
-                    skill_name = candidateSkill.skill.SkillName,
+                    skill_id = candidateSkill.SkillId,
+                    skill_name = candidateSkill.Skill.SkillName,
                     skill_type = skillType,
                     review = new Interview_FeedBackDtos.SkillReviewDataDto
                     {
-                        yearsOfExperience = candidateSkill.years_experience,
-                        conceptRating = feedback.concept_rating,
-                        technicalRating = feedback.technical_rating,
-                        comments = feedback.comments
+                        yearsOfExperience = candidateSkill.YearsExperience,
+                        conceptRating = feedback.ConceptRating,
+                        technicalRating = feedback.TechnicalRating,
+                        comments = feedback.Comments
                     }
                 };
 

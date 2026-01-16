@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RecruitmentApi.Dtos;
 using RecruitmentApi.Services;
 using static RecruitmentApi.Services.ReportServices;
 
@@ -20,7 +21,7 @@ namespace RecruitmentApi.Controllers
 
         [HttpPost("interview-summary")]
         [Authorize(Roles = "Admin, HR")]
-        public async Task<IActionResult> GetInterviewSummary([FromBody] InterviewSummaryRequest request)
+        public async Task<IActionResult> GetInterviewSummary([FromBody] ReportsDtos.InterviewSummaryRequest request)
         {
             if (string.IsNullOrEmpty(request.UserId))
             {
@@ -49,7 +50,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("TechWiseProfiles")]
-        public async Task<IActionResult> GetTechWiseProfiles(TechReq request)
+        public async Task<IActionResult> GetTechWiseProfiles(ReportsDtos.TechReq request)
         {
             try
             {
@@ -73,7 +74,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("ExperienceWiseProfiles")]
-        public async Task<IActionResult> GetExperienceWiseReport(ExpirienceReq request)
+        public async Task<IActionResult> GetExperienceWiseReport(ReportsDtos.ExpirienceReq request)
         {
             try
             {
@@ -91,6 +92,53 @@ namespace RecruitmentApi.Controllers
                 {
                     success = false,
                     message = "An error occured while fetchig data",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("daily-summary")]
+        public async Task<IActionResult> GetDailySummary([FromQuery] DateTime date)
+        {
+            try
+            {
+                var res = await _summaryService.GetDailySummaryAsync(date);
+                return Ok(new {
+                    success = true,
+                    message = "Daily summary succefully generated",
+                    data= res
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while generating the report.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("candidate-summary")]
+        public async Task<IActionResult> GetCandidateSummary([FromQuery] string CandidateId)
+        {
+            try
+            {
+                var res = await _summaryService.GetCandidateSummaryAsync(CandidateId);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Candidate summary succefully generated",
+                    data = res
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while generating the report.",
                     error = ex.Message
                 });
             }

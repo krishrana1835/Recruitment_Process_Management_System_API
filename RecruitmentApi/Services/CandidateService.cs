@@ -30,11 +30,11 @@ namespace RecruitmentApi.Services
         {
             var candidates = await _context.Candidates.Select(r => new CandidateDtos.CandidateListDto
             {
-                candidate_id = r.candidate_id,
-                full_name = r.full_name,
-                email = r.email,
-                phone = r.phone,
-                created_at = r.created_at,
+                candidate_id = r.CandidateId,
+                full_name = r.FullName,
+                email = r.Email,
+                phone = r.Phone,
+                created_at = r.CreatedAt,
             }).ToListAsync();
 
             if (candidates == null)
@@ -48,9 +48,9 @@ namespace RecruitmentApi.Services
         public async Task<string?> GetLastCandidateIdAsync()
         {
             var candidate = await _context.Candidates
-                                .OrderByDescending(c => c.created_at)
+                                .OrderByDescending(c => c.CreatedAt)
                                 .FirstOrDefaultAsync();
-            return candidate?.candidate_id;
+            return candidate?.CandidateId;
         }
 
         /// <summary>
@@ -61,85 +61,92 @@ namespace RecruitmentApi.Services
         {
             var candidateProfile = await _context.Candidates
                 .AsNoTracking()
-                .Where(c => c.candidate_id == candidateId)
+                .Where(c => c.CandidateId == candidateId)
                 // Project directly into the main profile DTO
                 .Select(c => new CandidateDtos.CandidateProfileDto
                 {
                     // Base properties
-                    candidate_id = c.candidate_id,
-                    full_name = c.full_name,
-                    email = c.email,
-                    phone = c.phone,
-                    resume_path = c.resume_path,
-                    created_at = c.created_at,
+                    candidate_id = c.CandidateId,
+                    full_name = c.FullName,
+                    email = c.Email,
+                    phone = c.Phone,
+                    resume_path = c.ResumePath,
+                    created_at = c.CreatedAt,
 
                     // Map related collections to their specific nested DTOs
-                    Candidate_Documents = c.Candidate_Documents.Select(doc => new Candidate_DocumentDtos.Candidate_DocumentDto
+                    Candidate_Documents = c.CandidateDocuments.Select(doc => new Candidate_DocumentDtos.Candidate_DocumentDto
                     {
-                        document_id = doc.document_id,
-                        document_type = doc.document_type,
-                        file_path = doc.file_path,
-                        verification_status = doc.verification_status,
-                        uploaded_at = doc.uploaded_at
+                        document_id = doc.DocumentId,
+                        document_type = doc.DocumentType,
+                        file_path = doc.FilePath,
+                        verification_status = doc.VerificationStatus,
+                        uploaded_at = doc.UploadedAt
                     }).ToList(),
 
-                    Candidate_Reviews = c.Candidate_Reviews.Select(rev => new Candidate_ReviewDtos.CandidateReviewDto_Candidate
+                    Candidate_Reviews = c.CandidateReviews.Select(rev => new Candidate_ReviewDtos.CandidateReviewDto_Candidate
                     {
-                        review_id = rev.review_id,
-                        comments = rev.comments,
-                        reviewed_at = rev.reviewed_at,
-                        job_id = rev.job_id,
-                        user_id = rev.user_id,
+                        review_id = rev.ReviewId,
+                        comments = rev.Comments,
+                        reviewed_at = rev.ReviewedAt,
+                        job_id = rev.JobId,
+                        user_id = rev.UserId,
                         job = new JobDtos.JobDto_Candidate
                         {
-                            job_id = rev.job.job_id,
-                            job_title = rev.job.job_title
+                            job_id = rev.Job.JobId,
+                            job_title = rev.Job.JobTitle
                         }
                     }).ToList(),
 
-                    Candidate_Skills = c.Candidate_Skills.Select(cs => new Candidate_SkillDtos.Candidate_SkillDto
+                    Candidate_Skills = c.CandidateSkills.Select(cs => new Candidate_SkillDtos.Candidate_SkillDto
                     {
-                        candidate_skill_id = cs.candidate_skill_id,
-                        years_experience = cs.years_experience,
-                        skill_id = cs.skill_id,
-                        candidate_id = cs.candidate_id,
+                        candidate_skill_id = cs.CandidateSkillId,
+                        years_experience = cs.YearsExperience,
+                        skill_id = cs.SkillId,
+                        candidate_id = cs.CandidateId,
                         // Map the related Skill entity to the SkillDto
                         skill = new SkillDtos.SkillDto
                         {
-                            skill_id = cs.skill.SkillId,
-                            skill_name = cs.skill.SkillName
+                            skill_id = cs.Skill.SkillId,
+                            skill_name = cs.Skill.SkillName
                         }
                     }).ToList(),
 
-                    Candidate_Status_Histories = c.Candidate_Status_Histories.Select(hist => new Candidate_Status_HistoryDtos.Candidate_Status_HistoryDto_Candidate
+                    Candidate_Status_Histories = c.CandidateStatusHistories.Select(hist => new Candidate_Status_HistoryDtos.Candidate_Status_HistoryDto_Candidate
                     {
-                        candidate_status_id = hist.candidate_status_id,
-                        status = hist.status,
-                        reason = hist.reason,
-                        changed_at = hist.changed_at,
+                        candidate_status_id = hist.CandidateStatusId,
+                        status = hist.Status,
+                        reason = hist.Reason,
+                        changed_at = hist.ChangedAt,
                         job = new JobDtos.JobTitle
                         {
-                            job_title = hist.job.job_title
+                            job_title = hist.Job.JobTitle
                         }
                     }).ToList(),
 
-                    Interviews = c.Interviews.Select(i => new InterviewDtos.InterviewDtos_Candidate
-                    {
-                        interview_id = i.interview_id,
-                        job_id = i.job_id,
-                        job = new JobDtos.JobDto_Candidate
+                    Interviews = c.Interviews
+                        .OrderBy(i => i.Job.JobTitle)
+                        .ThenBy(i => i.RoundNumber)
+                        .Select(i => new InterviewDtos.InterviewDtos_Candidate
                         {
-                            job_id = i.job.job_id,
-                            job_title = i.job.job_title,
-                        }
-                    }).ToList(),
+                            interview_id = i.InterviewId,
+                            job_id = i.JobId,
+                            round_title = i.InterviewType.InterviewRoundName,
+                            round_number = i.RoundNumber,
+                            status = i.Status,
+                            job = new JobDtos.JobDto_Candidate
+                            {
+                                job_id = i.Job.JobId,
+                                job_title = i.Job.JobTitle
+                            }
+                        })
+                        .ToList(),
 
-                    Employee_Record = c.Employee_Record == null ? null : new Employee_RecordDtos.Employee_RecordDto_Candidate
+                    Employee_Record = c.EmployeeRecord == null ? null : new Employee_RecordDtos.Employee_RecordDto_Candidate
                     {
-                        employee_id = c.Employee_Record.employee_id,
-                        joining_date = c.Employee_Record.joining_date,
-                        offer_letter_path = c.Employee_Record.offer_letter_path,
-                        job_id = c.Employee_Record.job_id
+                        employee_id = c.EmployeeRecord.EmployeeId,
+                        joining_date = c.EmployeeRecord.JoiningDate,
+                        offer_letter_path = c.EmployeeRecord.OfferLetterPath,
+                        job_id = c.EmployeeRecord.JobId
                     }
                 })
                 .FirstOrDefaultAsync();
@@ -155,12 +162,12 @@ namespace RecruitmentApi.Services
             if (id.IsNullOrEmpty())
                 throw new ArgumentException("Invalid candidate Id");
 
-            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == id);
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.CandidateId == id);
 
             if (candidate == null)
                 throw new Exception("Candidate not found");
 
-            string resume_path = candidate.resume_path;
+            string resume_path = candidate.ResumePath;
 
             return resume_path;
         }
@@ -170,17 +177,17 @@ namespace RecruitmentApi.Services
             if (id.IsNullOrEmpty())
                 throw new ArgumentException("Invalid candidate id");
 
-            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == id);
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.CandidateId == id);
 
             if (candidate == null)
                 throw new Exception("Candidate not found");
 
             var response = new CandidateDtos.CandidateDashboardProfile
             {
-                candidate_id = candidate.candidate_id,
-                full_name = candidate.full_name,
-                email = candidate.email,
-                phone = candidate.phone
+                candidate_id = candidate.CandidateId,
+                full_name = candidate.FullName,
+                email = candidate.Email,
+                phone = candidate.Phone
             };
 
             return response;
@@ -194,14 +201,14 @@ namespace RecruitmentApi.Services
             if(dto.email.IsNullOrEmpty() || dto.phone.IsNullOrEmpty() || dto.full_name.IsNullOrEmpty())
                 throw new ArgumentException("Invalid Input for fields");
 
-            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == dto.candidate_id);
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.CandidateId == dto.candidate_id);
 
             if (candidate == null)
                 throw new Exception("Candidate not found");
 
-            candidate.full_name = dto.full_name;
-            candidate.email = dto.email;
-            candidate.phone = dto.phone;
+            candidate.FullName = dto.full_name;
+            candidate.Email = dto.email;
+            candidate.Phone = dto.phone;
 
             await _context.SaveChangesAsync();
 
@@ -213,7 +220,7 @@ namespace RecruitmentApi.Services
             if (email.IsNullOrEmpty())
                 throw new ArgumentException("Invalid Email");
 
-            var data = await _context.Candidates.FirstOrDefaultAsync(r => r.email == email);
+            var data = await _context.Candidates.FirstOrDefaultAsync(r => r.Email == email);
 
             if (data != null)
                 return true;
@@ -236,7 +243,7 @@ namespace RecruitmentApi.Services
                 throw new Exception("One or more required fields are missing.");
             }
 
-            var data = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == dto.candidate_id);
+            var data = await _context.Candidates.FirstOrDefaultAsync(r => r.CandidateId == dto.candidate_id);
 
             if (data != null)
             {
@@ -247,13 +254,13 @@ namespace RecruitmentApi.Services
 
             Candidate candidate = new Candidate
             {
-                candidate_id = dto.candidate_id,
-                full_name = dto.full_name,
-                email = dto.email,
-                phone = dto.phone,
-                resume_path = dto.resume_path,
-                created_at = DateTime.Now,
-                password = hashedPassword,
+                CandidateId = dto.candidate_id,
+                FullName = dto.full_name,
+                Email = dto.email,
+                Phone = dto.phone,
+                ResumePath = dto.resume_path,
+                CreatedAt = DateTime.Now,
+                Password = hashedPassword,
             };
 
             await _context.Candidates.AddAsync(candidate);
@@ -277,7 +284,7 @@ namespace RecruitmentApi.Services
                 throw new Exception("One or more required fields are missing.");
             }
 
-            var data = await _context.Candidates.FirstOrDefaultAsync(r => r.email == dto.email);
+            var data = await _context.Candidates.FirstOrDefaultAsync(r => r.Email == dto.email);
 
             if (data != null)
             {
@@ -288,13 +295,13 @@ namespace RecruitmentApi.Services
 
             Candidate candidate = new Candidate
             {
-                candidate_id = dto.candidate_id,
-                full_name = dto.full_name,
-                email = dto.email,
-                phone = dto.phone,
-                resume_path = "not provided",
-                created_at = DateTime.Now,
-                password = hashedPassword,
+                CandidateId = dto.candidate_id,
+                FullName = dto.full_name,
+                Email = dto.email,
+                Phone = dto.phone,
+                ResumePath = "not provided",
+                CreatedAt = DateTime.Now,
+                Password = hashedPassword,
             };
 
             await _context.Candidates.AddAsync(candidate);
@@ -309,14 +316,14 @@ namespace RecruitmentApi.Services
                 throw new ArgumentException("Invalid Candidate Id");
             if (dto.password.IsNullOrEmpty())
                 throw new ArgumentException("Invalid Password format");
-            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == dto.candidate_id);
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.CandidateId == dto.candidate_id);
 
             if (candidate == null)
                 throw new Exception("Candidate not found");
 
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.password);
 
-            candidate.password = hashedPassword;
+            candidate.Password = hashedPassword;
 
             await _context.SaveChangesAsync();
             return true;
@@ -330,12 +337,12 @@ namespace RecruitmentApi.Services
             if (dto.resume_path.IsNullOrEmpty())
                 throw new ArgumentException("Invalid Resume path");
 
-            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == dto.candidate_id);
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.CandidateId == dto.candidate_id);
 
             if (candidate == null)
                 throw new Exception("Candidate not found");
 
-            candidate.resume_path = dto.resume_path;
+            candidate.ResumePath = dto.resume_path;
 
             await _context.SaveChangesAsync();
             return dto;
@@ -361,7 +368,7 @@ namespace RecruitmentApi.Services
 
                 try
                 {
-                    var existingCandidate = await _context.Candidates.FirstOrDefaultAsync(r => r.email == d.email);
+                    var existingCandidate = await _context.Candidates.FirstOrDefaultAsync(r => r.Email == d.email);
                     if (existingCandidate != null)
                     {
                         throw new Exception($"Candidate with email {d.email} is already registered");
@@ -371,19 +378,19 @@ namespace RecruitmentApi.Services
 
                     Candidate candidate = new Candidate
                     {
-                        candidate_id = d.candidate_id,
-                        full_name = d.full_name,
-                        email = d.email,
-                        phone = d.phone,
-                        resume_path = d.resume_path,
-                        created_at = DateTime.Now,
-                        password = hashedPassword,
+                        CandidateId = d.candidate_id,
+                        FullName = d.full_name,
+                        Email = d.email,
+                        Phone = d.phone,
+                        ResumePath = d.resume_path,
+                        CreatedAt = DateTime.Now,
+                        Password = hashedPassword,
                     };
 
                     await _context.Candidates.AddAsync(candidate);
                     await _context.SaveChangesAsync();
 
-                    insertedCandidateIds.Add(candidate.email);
+                    insertedCandidateIds.Add(candidate.Email);
                 }
                 catch (Exception ex)
                 {
@@ -415,7 +422,7 @@ namespace RecruitmentApi.Services
 
                 try
                 {
-                    var existingCandidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == d.candidate_id);
+                    var existingCandidate = await _context.Candidates.FirstOrDefaultAsync(r => r.CandidateId == d.candidate_id);
 
                     if (existingCandidate == null)
                     {
@@ -424,15 +431,15 @@ namespace RecruitmentApi.Services
                     }
 
                     // Update fields
-                    existingCandidate.full_name = d.full_name;
-                    existingCandidate.email = d.email;
-                    existingCandidate.phone = d.phone;
-                    existingCandidate.resume_path = d.resume_path;
+                    existingCandidate.FullName = d.full_name;
+                    existingCandidate.Email = d.email;
+                    existingCandidate.Phone = d.phone;
+                    existingCandidate.ResumePath = d.resume_path;
 
                     _context.Candidates.Update(existingCandidate);
                     await _context.SaveChangesAsync();
 
-                    updatedCandidateEmails.Add(existingCandidate.email);
+                    updatedCandidateEmails.Add(existingCandidate.Email);
                 }
                 catch (Exception ex)
                 {
@@ -460,7 +467,7 @@ namespace RecruitmentApi.Services
 
                 try
                 {
-                    var candidate = await _context.Candidates.FirstOrDefaultAsync(c => c.candidate_id == d.candidate_id);
+                    var candidate = await _context.Candidates.FirstOrDefaultAsync(c => c.CandidateId == d.candidate_id);
 
                     if (candidate == null)
                     {
@@ -471,7 +478,7 @@ namespace RecruitmentApi.Services
                     _context.Candidates.Remove(candidate);
                     await _context.SaveChangesAsync();
 
-                    deletedCandidateEmails.Add(candidate.candidate_id);
+                    deletedCandidateEmails.Add(candidate.CandidateId);
                 }
                 catch (Exception ex)
                 {
@@ -488,7 +495,7 @@ namespace RecruitmentApi.Services
             if (string.IsNullOrWhiteSpace(id))
                 throw new ArgumentException("Candidate ID cannot be null or empty.", nameof(id));
 
-            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == id);
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.CandidateId == id);
 
             if (candidate == null)
                 throw new KeyNotFoundException("Candidate not found with the specified ID.");

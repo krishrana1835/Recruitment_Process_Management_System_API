@@ -5,11 +5,11 @@ namespace RecruitmentApi.Models;
 
 public partial class Interview_Type
 {
-    public int interview_type_id { get; set; }
+    public int InterviewTypeId { get; set; }
 
-    public string interview_round_name { get; set; } = null!;
+    public string InterviewRoundName { get; set; } = null!;
 
-    public string? process_descreption { get; set; }
+    public string? ProcessDescreption { get; set; }
 
     public virtual ICollection<Interview> Interviews { get; set; } = new List<Interview>();
 }

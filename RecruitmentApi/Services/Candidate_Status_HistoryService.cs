@@ -23,12 +23,13 @@ namespace RecruitmentApi.Services
         {
             Applied,                 // Candidate has submitted the application
             Shortlisted,             // Candidate has been shortlisted for next round
-            InterviewScheduled,      // Interview has been scheduled
-            InterviewCompleted,      // Candidate has completed the interview
-            OnHold,                  // Application is temporarily on hold
-            Accepted,
+            Scheduled,      // Interview has been scheduled
+            Rescheduled,      // Candidate has completed the interview
+            Selected,
             Rejected,                // Candidate has been rejected
-            Hired                    // Candidate has officially joined the company
+            Hired,                    // Candidate has officially joined the company
+            Completed,
+            Pending
         }
 
         private static bool IsValidCandidateStatus(string status)
@@ -36,21 +37,21 @@ namespace RecruitmentApi.Services
             return Enum.TryParse(typeof(CandidateStatus), status, true, out _);
         }
 
-        public async Task<Boolean> CheckForApplicationAsync(Candidate_Status_HistoryDtos.JobApplicationByCandidate dto)
+        public async Task<Boolean> CheckForApplicationAsync(int job_id, string candidate_id)
         {
-            if (dto.candidate_id.IsNullOrEmpty())
+            if (candidate_id.IsNullOrEmpty())
                 throw new ArgumentException("Invalid Candidate Id");
 
-            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == dto.candidate_id);
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.CandidateId == candidate_id);
             if (candidate == null)
                 throw new Exception("Candidate not found");
 
-            var job = await _context.Jobs.FirstOrDefaultAsync(r => r.job_id == dto.job_id);
+            var job = await _context.Jobs.FirstOrDefaultAsync(r => r.JobId == job_id);
 
             if (job == null)
                 throw new Exception("Job not found");
 
-            var job_status = await _context.Candidate_Status_Histories.FirstOrDefaultAsync(r => r.candidate_id == dto.candidate_id && r.job_id == dto.job_id);
+            var job_status = await _context.Candidate_Status_Histories.FirstOrDefaultAsync(r => r.CandidateId == candidate_id && r.JobId == job_id);
 
             if (job_status == null)
                 return false;
@@ -62,13 +63,13 @@ namespace RecruitmentApi.Services
             if (candidate_id.IsNullOrEmpty())
                 throw new ArgumentException("Invalid Candidate Id");
 
-            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == candidate_id);
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.CandidateId == candidate_id);
             if (candidate == null)
                 throw new Exception("Candidate not found");
 
-            var status = await _context.Candidate_Status_Histories.Include(r => r.job).ThenInclude(j => j.status)
-                .Where(r => r.candidate_id == candidate_id)
-                .OrderByDescending(r => r.changed_at)
+            var status = await _context.Candidate_Status_Histories.Include(r => r.Job).ThenInclude(j => j.Status)
+                .Where(r => r.CandidateId == candidate_id)
+                .OrderByDescending(r => r.ChangedAt)
                 .ToListAsync();
 
             if (status == null)
@@ -76,15 +77,16 @@ namespace RecruitmentApi.Services
 
             var response = status.Select(r => new Candidate_Status_HistoryDtos.JobApplicationStatus
             {
-                candidate_status_id = r.candidate_status_id,
-                status = r.status,
-                changed_at = r.changed_at,
+                candidate_status_id = r.CandidateStatusId,
+                status = r.Status,
+                changed_at = r.ChangedAt,
+                reason = r.Reason,
                 job = new JobDtos.ListJobStatus
                 {
-                    job_title = r.job.job_title,
+                    job_title = r.Job.JobTitle,
                     status = new Jobs_StatusDtos.ListJobStatus
                     {
-                        status = r.job.status.status
+                        status = r.Job.Status.Status
                     }
                 }
             }).ToList();
@@ -97,17 +99,17 @@ namespace RecruitmentApi.Services
             if (candidate_id.IsNullOrEmpty())
                 throw new ArgumentException("Invalid Candidate Id");
 
-            var candidate = await _context.Candidates.AnyAsync(r => r.candidate_id == candidate_id);
+            var candidate = await _context.Candidates.AnyAsync(r => r.CandidateId == candidate_id);
             if (!candidate)
                 throw new NullReferenceException("Candidate not found");
 
             var response = await _context.Candidate_Status_Histories
-                             .Where(r => r.candidate_id == candidate_id)
+                             .Where(r => r.CandidateId == candidate_id)
                              .Select(r => new JobDtos.ListJobTitle
                              {
-                                 job_id = r.job.job_id,
-                                 job_title = r.job.job_title,
-                                 sheduled = r.job.scheduled
+                                 job_id = r.Job.JobId,
+                                 job_title = r.Job.JobTitle,
+                                 scheduled = r.Job.Scheduled
                              })
                              .Distinct()
                              .ToListAsync();
@@ -120,28 +122,28 @@ namespace RecruitmentApi.Services
             if (dto.candidate_id.IsNullOrEmpty())
                 throw new ArgumentException("Invalid Candidate Id");
 
-            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.candidate_id == dto.candidate_id);
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.CandidateId == dto.candidate_id);
             if (candidate == null)
                 throw new Exception("Candidate not found");
 
-            var job = await _context.Jobs.FirstOrDefaultAsync(r => r.job_id == dto.job_id);
+            var job = await _context.Jobs.FirstOrDefaultAsync(r => r.JobId == dto.job_id);
 
             if (job == null)
                 throw new Exception("Job not found");
 
-            var changedBy = await _context.Users.Include(r => r.roles).Where(r => r.roles.Any(r => r.role_name == "Admin")).FirstOrDefaultAsync();
+            var changedBy = await _context.Users.Include(r => r.Roles).Where(r => r.Roles.Any(r => r.RoleName == "Admin")).FirstOrDefaultAsync();
 
             if (changedBy == null)
                 throw new Exception("Can not find user id to assign");
 
             var candidate_status = new Candidate_Status_History
             {
-                status = CandidateStatus.Applied.ToString(),
-                reason = "Application sent by candidate",
-                changed_at = DateTime.Now,
-                candidate_id = dto.candidate_id,
-                job_id = dto.job_id,
-                changed_by = changedBy.user_id
+                Status = CandidateStatus.Applied.ToString(),
+                Reason = "Application sent by candidate",
+                ChangedAt = DateTime.Now,
+                CandidateId = dto.candidate_id,
+                JobId = dto.job_id,
+                ChangedBy = changedBy.UserId
             };
 
             await _context.Candidate_Status_Histories.AddAsync(candidate_status);
@@ -168,34 +170,34 @@ namespace RecruitmentApi.Services
             if (int.IsNegative(dto.job_id))
                 throw new ArgumentException("Invaid job id");
 
-            var candidate = await _context.Candidates.AnyAsync(c => c.candidate_id == dto.candidate_id);
+            var candidate = await _context.Candidates.AnyAsync(c => c.CandidateId == dto.candidate_id);
 
             if (!candidate)
                 throw new NullReferenceException("Candidate not found");
 
-            var job = await _context.Jobs.AnyAsync(j => j.job_id == dto.job_id);
+            var job = await _context.Jobs.AnyAsync(j => j.JobId == dto.job_id);
 
             if (!job)
                 throw new NullReferenceException("Job not found");
 
-            var user = await _context.Users.AnyAsync(c => c.user_id == dto.changed_by);
+            var user = await _context.Users.AnyAsync(c => c.UserId == dto.changed_by);
 
             if (!user)
                 throw new NullReferenceException("User not found");
 
-            var candidate_status = await _context.Candidate_Status_Histories.AnyAsync(r => r.candidate_id == dto.candidate_id && r.job_id == dto.job_id && r.status == CandidateStatus.Applied.ToString());
+            var candidate_status = await _context.Candidate_Status_Histories.AnyAsync(r => r.CandidateId == dto.candidate_id && r.JobId == dto.job_id && r.Status == CandidateStatus.Applied.ToString());
 
             if (!candidate_status)
                 throw new NullReferenceException("Candidate Status not found");
 
             var status = new Candidate_Status_History
             {
-                status = dto.status,
-                reason = dto.reason,
-                changed_at = DateTime.Now,
-                candidate_id = dto.candidate_id,
-                job_id = dto.job_id,
-                changed_by = dto.changed_by,
+                Status = dto.status,
+                Reason = dto.reason,
+                ChangedAt = DateTime.Now,
+                CandidateId = dto.candidate_id,
+                JobId = dto.job_id,
+                ChangedBy = dto.changed_by,
             };
 
             await _context.Candidate_Status_Histories.AddAsync(status);
@@ -209,28 +211,28 @@ namespace RecruitmentApi.Services
             if (job_id <= 0)
                 throw new ArgumentException("Invalid Job Id");
 
-            var jobExists = await _context.Jobs.AnyAsync(r => r.job_id == job_id);
+            var jobExists = await _context.Jobs.AnyAsync(r => r.JobId == job_id);
             if (!jobExists)
                 throw new Exception("Job not found");
             
             var latestStatus = _context.Candidate_Status_Histories
-                .Where(r => r.job_id == job_id)
-                .GroupBy(r => r.candidate_id)
+                .Where(r => r.JobId == job_id)
+                .GroupBy(r => r.CandidateId)
                 .Select(g => new
                 {
                     CandidateId = g.Key,
-                    LatestChangedAt = g.Max(r => r.changed_at)
+                    LatestChangedAt = g.Max(r => r.ChangedAt)
                 });
 
             var appliedCandidates = await _context.Candidate_Status_Histories
-                .Include(r => r.candidate)
+                .Include(r => r.Candidate)
                 .Join(
                     latestStatus,
-                    history => new { history.candidate_id, history.changed_at },
-                    latest => new { candidate_id = latest.CandidateId, changed_at = latest.LatestChangedAt },
+                    history => new { history.CandidateId, history.ChangedAt },
+                    latest => new { CandidateId = latest.CandidateId, ChangedAt = latest.LatestChangedAt },
                     (history, latest) => history
                 )
-                .Where(r => r.status == CandidateStatus.Applied.ToString())
+                .Where(r => r.Status == CandidateStatus.Applied.ToString())
                 .ToListAsync();
 
             if (!appliedCandidates.Any())
@@ -239,10 +241,10 @@ namespace RecruitmentApi.Services
 
             var response = appliedCandidates.Select(r => new CandidateDtos.CandidateListDto
             {
-                candidate_id = r.candidate_id,
-                full_name = r.candidate.full_name,
-                email = r.candidate.email,
-                phone = r.candidate.phone
+                candidate_id = r.CandidateId,
+                full_name = r.Candidate.FullName,
+                email = r.Candidate.Email,
+                phone = r.Candidate.Phone
             }).ToList();
 
             return response;

@@ -92,9 +92,9 @@ namespace RecruitmentApi.Controllers
         /// <response code="200">Returns the UserProfileDto object.</response>
         /// <response code="400">If the user ID is not provided.</response>
         /// <response code="404">If no user is found with the specified ID.</response>
-        [HttpGet("GetUserProfile/{id}")]
+        [HttpGet("GetUserProfile")]
         [Authorize(Roles = "Admin, Viewer")]
-        public async Task<ActionResult<UserDtos.UserProfileDto?>> getUserProfile(string id)
+        public async Task<ActionResult<UserDtos.UserProfileDto?>> getUserProfile([FromQuery] string id)
         {
             if (id == null)
                 return BadRequest("Plese enter user_id");
@@ -104,9 +104,9 @@ namespace RecruitmentApi.Controllers
             return Ok(user);
         }
 
-        [HttpGet("GetUserProfileToUpdate/{id}")]
+        [HttpGet("GetUserProfileToUpdate")]
         [Authorize(Roles = "Admin, Reviewer, Recruiter, Interviewer, HR, Viewer")]
-        public async Task<IActionResult> getUserProfileToUpdate(string id)
+        public async Task<IActionResult> getUserProfileToUpdate([FromQuery] string id)
         {
             try
             {
@@ -176,7 +176,7 @@ namespace RecruitmentApi.Controllers
             try
             {
                 var user = await _userService.CreateUserAsync(dto);
-                return Ok(new { message = "User created", user_id = user.user_id });
+                return Ok(new { message = "User created", user_id = user.UserId });
             }
             catch (Exception ex)
             {
@@ -199,7 +199,7 @@ namespace RecruitmentApi.Controllers
             try
             {
                 var user = await _userService.UpdateUserAsync(dto);
-                return Ok(new { message = "User Updated", user_id = user.user_id });
+                return Ok(new { message = "User Updated", user_id = user.UserId });
             }
             catch (Exception ex)
             {
@@ -214,9 +214,9 @@ namespace RecruitmentApi.Controllers
         /// <returns>A success message and the ID of the deleted user.</returns>
         /// <response code="200">Returns a success message and the user ID.</response>
         /// <response code="400">If there is an error during user deletion.</response>
-        [HttpDelete("DeleteUser/{user_id}")]
+        [HttpDelete("DeleteUser")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteUser(string user_id)
+        public async Task<IActionResult> DeleteUser([FromQuery] string user_id)
         {
             try
             {

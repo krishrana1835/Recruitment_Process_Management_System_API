@@ -37,6 +37,7 @@ namespace RecruitmentApi
             builder.Services.AddScoped<HrReviewService>();
             builder.Services.AddScoped<RatingCardService>();
             builder.Services.AddScoped<EmailService>();
+            builder.Services.AddScoped<EmployeeRecordService>();
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("dbConnection")));
@@ -50,6 +51,9 @@ namespace RecruitmentApi
             builder.Services.AddScoped<IEmailJob, EmailJob>();
             builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
             builder.Services.AddScoped<ReportServices>();
+
+            builder.Services.Configure<EmailConfigurationModel>(builder.Configuration.GetSection("Email"));
+
 
 
 

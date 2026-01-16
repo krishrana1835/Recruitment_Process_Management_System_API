@@ -1,21 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RecruitmentApi.Models;
 
 public partial class Employee_Record
 {
-    public string employee_id { get; set; } = null!;
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int EmployeeId { get; set; }
 
-    public DateOnly joining_date { get; set; }
+    public DateOnly JoiningDate { get; set; }
 
-    public string offer_letter_path { get; set; } = null!;
+    public string OfferLetterPath { get; set; } = null!;
 
-    public string candidate_id { get; set; } = null!;
+    public string CandidateId { get; set; } = null!;
 
-    public int job_id { get; set; }
+    public int JobId { get; set; }
 
-    public virtual Candidate candidate { get; set; } = null!;
+    public virtual Candidate Candidate { get; set; } = null!;
 
-    public virtual Job job { get; set; } = null!;
+    public virtual Job Job { get; set; } = null!;
 }

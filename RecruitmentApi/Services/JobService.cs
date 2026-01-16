@@ -23,19 +23,19 @@ namespace RecruitmentApi.Services
         public async Task<List<JobDtos.ListAllJobs>> GetAllJobsAsync()
         {
             var jobs = await _context.Jobs
-                .Include(j => j.status)
+                .Include(j => j.Status)
                 .Select(s => new JobDtos.ListAllJobs
                 {
-                    job_id = s.job_id,
-                    job_description = s.job_description,
-                    job_title = s.job_title,
-                    created_at  = s.created_at,
-                    status_id = s.status_id,
-                    scheduled = s.scheduled,
+                    job_id = s.JobId,
+                    job_description = s.JobDescription,
+                    job_title = s.JobTitle,
+                    created_at  = s.CreatedAt,
+                    status_id = s.StatusId,
+                    scheduled = s.Scheduled,
                     status = new Jobs_StatusDtos.ListAllJobs
                     {
-                        status_id = s.status_id,
-                        status = s.status.status,
+                        status_id = s.StatusId,
+                        status = s.Status.Status,
                     }
                 }).ToListAsync();
 
@@ -47,20 +47,20 @@ namespace RecruitmentApi.Services
             if(filter == "Scheduled")
             {
                 var jobs = await _context.Jobs
-                    .Include(j => j.status)
-                    .Where(j => j.status.status != "Closed" && j.scheduled == "Scheduled")
+                    .Include(j => j.Status)
+                    .Where(j => j.Status.Status != "Closed" && j.Scheduled == "Scheduled")
                     .Select(s => new JobDtos.ListAllJobs
                     {
-                        job_id = s.job_id,
-                        job_description = s.job_description,
-                        job_title = s.job_title,
-                        created_at = s.created_at,
-                        status_id = s.status_id,
-                        scheduled = s.scheduled,
+                        job_id = s.JobId,
+                        job_description = s.JobDescription,
+                        job_title = s.JobTitle,
+                        created_at = s.CreatedAt,
+                        status_id = s.StatusId,
+                        scheduled = s.Scheduled,
                         status = new Jobs_StatusDtos.ListAllJobs
                         {
-                            status_id = s.status_id,
-                            status = s.status.status,
+                            status_id = s.StatusId,
+                            status = s.Status.Status,
                         }
                     }).ToListAsync();
                 return jobs;
@@ -68,20 +68,20 @@ namespace RecruitmentApi.Services
             else if(filter == "All")
             {
                 var jobs = await _context.Jobs
-                    .Include(j => j.status)
-                    .Where(j => j.status.status != "Closed")
+                    .Include(j => j.Status)
+                    .Where(j => j.Status.Status != "Closed")
                     .Select(s => new JobDtos.ListAllJobs
                     {
-                        job_id = s.job_id,
-                        job_description = s.job_description,
-                        job_title = s.job_title,
-                        created_at = s.created_at,
-                        status_id = s.status_id,
-                        scheduled = s.scheduled,
+                        job_id = s.JobId,
+                        job_description = s.JobDescription,
+                        job_title = s.JobTitle,
+                        created_at = s.CreatedAt,
+                        status_id = s.StatusId,
+                        scheduled = s.Scheduled,
                         status = new Jobs_StatusDtos.ListAllJobs
                         {
-                            status_id = s.status_id,
-                            status = s.status.status,
+                            status_id = s.StatusId,
+                            status = s.Status.Status,
                         }
                     }).ToListAsync();
                 return jobs;
@@ -97,14 +97,14 @@ namespace RecruitmentApi.Services
         {
             var query = _context.Jobs
                 .Where(j =>
-                    j.scheduled == "Scheduled" &&
-                    j.status != null &&
-                    j.status.status != "Closed")
+                    j.Scheduled == "Scheduled" &&
+                    j.Status != null &&
+                    j.Status.Status != "Closed")
                 .Select(r => new JobDtos.ListJobTitle
                 {
-                    job_id = r.job_id,
-                    job_title = r.job_title,
-                    sheduled = r.scheduled
+                    job_id = r.JobId,
+                    job_title = r.JobTitle,
+                    scheduled = r.Scheduled
                 });
 
             if (sorted)
@@ -122,33 +122,33 @@ namespace RecruitmentApi.Services
                 throw new ArgumentException("Invalid job id");
 
             var job = await _context.Jobs
-                .Include(j => j.status)
-                .Include(j => j.Jobs_Skills)
-                .FirstOrDefaultAsync(j => j.job_id == job_id);
+                .Include(j => j.Status)
+                .Include(j => j.JobsSkills)
+                .FirstOrDefaultAsync(j => j.JobId == job_id);
 
             if (job == null)
                 throw new Exception("Job not found");
 
             var jobStatusDto = new Jobs_StatusDtos.CreateJobStatusDto
             {
-                status = job.status.status,
-                reason = job.status.reason,
-                changed_by = job.status.changed_by
+                status = job.Status.Status,
+                reason = job.Status.Reason,
+                changed_by = job.Status.ChangedBy
             };
 
-            var jobSkillsDtos = job.Jobs_Skills.Select(skill => new Jobs_SkillsDtos.Jobs_SkillDto
+            var jobSkillsDtos = job.JobsSkills.Select(skill => new Jobs_SkillsDtos.Jobs_SkillDto
             {
-                job_id = skill.job_id,
-                skill_id = skill.skill_id,
-                skill_type = skill.skill_type
+                job_id = skill.JobId,
+                skill_id = skill.SkillId,
+                skill_type = skill.SkillType
             }).ToList();
 
             var updateJobDto = new JobDtos.UpdateJobDto
             {
-                job_id = job.job_id,
-                job_title = job.job_title,
-                job_description = job.job_description,
-                created_by = job.created_by,
+                job_id = job.JobId,
+                job_title = job.JobTitle,
+                job_description = job.JobDescription,
+                created_by = job.CreatedBy,
                 status = jobStatusDto,
                 Jobs_Skills = jobSkillsDtos
             };
@@ -179,24 +179,24 @@ namespace RecruitmentApi.Services
             if (string.IsNullOrWhiteSpace(dto.created_by))
                 throw new ArgumentException("Created By field is required.");
 
-            var user = await _context.Users.FirstOrDefaultAsync(r => r.user_id == dto.created_by) ?? throw new Exception("User not found");
+            var user = await _context.Users.FirstOrDefaultAsync(r => r.UserId == dto.created_by) ?? throw new Exception("User not found");
 
             var jobStatus = new Jobs_Status
             {
-                status = dto.status.status,
-                reason = dto.status.reason,
-                changed_at = DateTime.UtcNow,
-                changed_by = dto.status.changed_by
+                Status = dto.status.status,
+                Reason = dto.status.reason,
+                ChangedAt = DateTime.UtcNow,
+                ChangedBy = dto.status.changed_by
             };
 
             var jobEntity = new Job
             {
-                job_title = dto.job_title,
-                job_description = dto.job_description,
-                created_at = DateTime.UtcNow,
-                created_by = dto.created_by,
-                status = jobStatus,
-                scheduled = "Pending"
+                JobTitle = dto.job_title,
+                JobDescription = dto.job_description,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = dto.created_by,
+                Status = jobStatus,
+                Scheduled = "Pending"
             };
 
             _context.Jobs.Add(jobEntity);
@@ -206,9 +206,9 @@ namespace RecruitmentApi.Services
             {
                 var jobSkills = dto.Jobs_Skills.Select(skillDto => new Jobs_Skill
                 {
-                    job_id = jobEntity.job_id,
-                    skill_id = skillDto.skill_id,
-                    skill_type = skillDto.skill_type == "Preferred" ? "P" : "R"
+                    JobId = jobEntity.JobId,
+                    SkillId = skillDto.skill_id,
+                    SkillType = skillDto.skill_type == "Preferred" ? "P" : "R"
                 }).ToList();
 
                 await _context.Jobs_Skills.AddRangeAsync(jobSkills);
@@ -216,20 +216,20 @@ namespace RecruitmentApi.Services
             }
 
             var status = await _context.Jobs_Statuses
-                .Where(s => s.status_id == jobEntity.status_id)
+                .Where(s => s.StatusId == jobEntity.StatusId)
                 .Select(s => new Jobs_StatusDtos.CreateJobStatusDto
                 {
-                    status = s.status,
-                    reason = s.reason,
-                    changed_by = s.changed_by
+                    status = s.Status,
+                    reason = s.Reason,
+                    changed_by = s.ChangedBy
                 })
                 .FirstOrDefaultAsync();
 
             var result = new JobDtos.CreateJobDto
             {
-                job_title = jobEntity.job_title,
-                job_description = jobEntity.job_description,
-                created_by = jobEntity.created_by,
+                job_title = jobEntity.JobTitle,
+                job_description = jobEntity.JobDescription,
+                created_by = jobEntity.CreatedBy,
                 status = status ?? new Jobs_StatusDtos.CreateJobStatusDto(),
                 Jobs_Skills = dto.Jobs_Skills
             };
@@ -260,50 +260,50 @@ namespace RecruitmentApi.Services
             if (string.IsNullOrWhiteSpace(dto.created_by))
                 throw new ArgumentException("Created By field is required.");
 
-            var user = await _context.Users.FirstOrDefaultAsync(r => r.user_id == dto.created_by);
+            var user = await _context.Users.FirstOrDefaultAsync(r => r.UserId == dto.created_by);
             if (user == null)
                 throw new Exception("User not found");
 
             var jobEntity = await _context.Jobs
-                .Include(j => j.status)
-                .Include(j => j.Jobs_Skills)
-                .FirstOrDefaultAsync(j => j.job_id == dto.job_id);
+                .Include(j => j.Status)
+                .Include(j => j.JobsSkills)
+                .FirstOrDefaultAsync(j => j.JobId == dto.job_id);
 
             if (jobEntity == null)
                 throw new Exception("Job not found");
 
-            jobEntity.job_title = dto.job_title;
-            jobEntity.job_description = dto.job_description;
-            jobEntity.created_by = dto.created_by;
+            jobEntity.JobTitle = dto.job_title;
+            jobEntity.JobDescription = dto.job_description;
+            jobEntity.CreatedBy = dto.created_by;
 
-            if (jobEntity.status == null)
+            if (jobEntity.Status == null)
             {
-                jobEntity.status = new Jobs_Status
+                jobEntity.Status = new Jobs_Status
                 {
-                    status = dto.status.status,
-                    reason = dto.status.reason,
-                    changed_by = dto.status.changed_by,
-                    changed_at = DateTime.UtcNow
+                    Status = dto.status.status,
+                    Reason = dto.status.reason,
+                    ChangedBy = dto.status.changed_by,
+                    ChangedAt = DateTime.UtcNow
                 };
             }
             else
             {
-                jobEntity.status.status = dto.status.status;
-                jobEntity.status.reason = dto.status.reason;
-                jobEntity.status.changed_by = dto.status.changed_by;
-                jobEntity.status.changed_at = DateTime.UtcNow;
+                jobEntity.Status.Status = dto.status.status;
+                jobEntity.Status.Reason = dto.status.reason;
+                jobEntity.Status.ChangedBy = dto.status.changed_by;
+                jobEntity.Status.ChangedAt = DateTime.UtcNow;
             }
 
-            var existingSkills = _context.Jobs_Skills.Where(js => js.job_id == jobEntity.job_id);
+            var existingSkills = _context.Jobs_Skills.Where(js => js.JobId == jobEntity.JobId);
             _context.Jobs_Skills.RemoveRange(existingSkills);
 
             if (dto.Jobs_Skills != null && dto.Jobs_Skills.Any())
             {
                 var jobSkills = dto.Jobs_Skills.Select(skillDto => new Jobs_Skill
                 {
-                    job_id = jobEntity.job_id,
-                    skill_id = skillDto.skill_id,
-                    skill_type = skillDto.skill_type == "Preferred" ? "P" : "R"
+                    JobId = jobEntity.JobId,
+                    SkillId = skillDto.skill_id,
+                    SkillType = skillDto.skill_type == "Preferred" ? "P" : "R"
                 }).ToList();
 
                 await _context.Jobs_Skills.AddRangeAsync(jobSkills);
@@ -312,21 +312,21 @@ namespace RecruitmentApi.Services
             await _context.SaveChangesAsync();
 
             var updatedStatus = await _context.Jobs_Statuses
-                .Where(s => s.status_id == jobEntity.status_id)
+                .Where(s => s.StatusId == jobEntity.StatusId)
                 .Select(s => new Jobs_StatusDtos.CreateJobStatusDto
                 {
-                    status = s.status,
-                    reason = s.reason,
-                    changed_by = s.changed_by
+                    status = s.Status,
+                    reason = s.Reason,
+                    changed_by = s.ChangedBy
                 })
                 .FirstOrDefaultAsync();
 
             var result = new JobDtos.UpdateJobDto
             {
-                job_id = jobEntity.job_id,
-                job_title = jobEntity.job_title,
-                job_description = jobEntity.job_description,
-                created_by = jobEntity.created_by,
+                job_id = jobEntity.JobId,
+                job_title = jobEntity.JobTitle,
+                job_description = jobEntity.JobDescription,
+                created_by = jobEntity.CreatedBy,
                 status = updatedStatus ?? new Jobs_StatusDtos.CreateJobStatusDto(),
                 Jobs_Skills = dto.Jobs_Skills
             };
@@ -340,9 +340,9 @@ namespace RecruitmentApi.Services
                 throw new ArgumentException("Invalid job id");
 
             var job = await _context.Jobs
-                .Include(j => j.status)
-                .Include(j => j.Jobs_Skills)
-                .FirstOrDefaultAsync(j => j.job_id == job_id);
+                .Include(j => j.Status)
+                .Include(j => j.JobsSkills)
+                .FirstOrDefaultAsync(j => j.JobId == job_id);
 
             if (job == null)
                 throw new Exception("Job not found");

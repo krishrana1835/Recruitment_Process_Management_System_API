@@ -25,9 +25,9 @@ namespace RecruitmentApi.Services
 
             var response = data.Select(r => new Interview_TypeDtos.InterviewType
             {
-                interview_round_name = r.interview_round_name,
-                interview_type_id = r.interview_type_id,
-                process_descreption = r.process_descreption,
+                interview_round_name = r.InterviewRoundName,
+                interview_type_id = r.InterviewTypeId,
+                process_descreption = r.ProcessDescreption,
             }).ToList();
 
             return response;
@@ -43,8 +43,8 @@ namespace RecruitmentApi.Services
 
             Interview_Type data = new Interview_Type
             {
-                interview_round_name = dto.interview_round_name,
-                process_descreption = dto.process_descreption,
+                InterviewRoundName = dto.interview_round_name,
+                ProcessDescreption = dto.process_descreption,
             };
 
             await _context.Interview_Types.AddAsync(data);
@@ -62,10 +62,10 @@ namespace RecruitmentApi.Services
             if (dto.process_descreption.IsNullOrEmpty())
                 throw new ArgumentException("process description is empty");
 
-            var data = await _context.Interview_Types.FirstOrDefaultAsync(r => r.interview_type_id == dto.interview_type_id) ?? throw new NullReferenceException("Interview Type Not found");
+            var data = await _context.Interview_Types.FirstOrDefaultAsync(r => r.InterviewTypeId == dto.interview_type_id) ?? throw new NullReferenceException("Interview Type Not found");
 
-            data.interview_round_name = dto.interview_round_name;
-            data.process_descreption = dto.process_descreption;
+            data.InterviewRoundName = dto.interview_round_name;
+            data.ProcessDescreption = dto.process_descreption;
 
             await _context.SaveChangesAsync();
 
@@ -74,7 +74,7 @@ namespace RecruitmentApi.Services
 
         public async Task<Boolean> DeleteInterviewType(Interview_TypeDtos.DeleteInterviewType dto)
         {
-            var data = await _context.Interview_Types.FirstOrDefaultAsync(r => r.interview_type_id == dto.interview_type_id) ?? throw new NullReferenceException("Interview Type not found");
+            var data = await _context.Interview_Types.FirstOrDefaultAsync(r => r.InterviewTypeId == dto.interview_type_id) ?? throw new NullReferenceException("Interview Type not found");
 
             _context.Interview_Types.Remove(data);
 

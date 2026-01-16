@@ -5,23 +5,23 @@ namespace RecruitmentApi.Models;
 
 public partial class Candidate_Status_History
 {
-    public int candidate_status_id { get; set; }
+    public int CandidateStatusId { get; set; }
 
-    public string status { get; set; } = null!;
+    public string Status { get; set; } = null!;
 
-    public string? reason { get; set; }
+    public string? Reason { get; set; }
 
-    public DateTime changed_at { get; set; }
+    public DateTime ChangedAt { get; set; }
 
-    public string candidate_id { get; set; } = null!;
+    public string CandidateId { get; set; } = null!;
 
-    public int job_id { get; set; }
+    public int JobId { get; set; }
 
-    public string changed_by { get; set; } = null!;
+    public string ChangedBy { get; set; } = null!;
 
-    public virtual Candidate candidate { get; set; } = null!;
+    public virtual Candidate Candidate { get; set; } = null!;
 
-    public virtual User changed_by_user { get; set; } = null!;
+    public virtual User ChangedByUser { get; set; } = null!;
 
-    public virtual Job job { get; set; } = null!;
+    public virtual Job Job { get; set; } = null!;
 }

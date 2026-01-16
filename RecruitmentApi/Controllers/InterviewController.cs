@@ -56,9 +56,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("InterviewRounds/{job_id}")]
+        [HttpGet("InterviewRounds")]
         [Authorize(Roles = "Admin, Recruiter, Interviewer, HR, Viewer")]
-        public async Task<IActionResult> fetchRounds(int job_id)
+        public async Task<IActionResult> fetchRounds([FromQuery] int job_id)
         {
             try
             {
@@ -85,8 +85,8 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("GetAllInterviewers/{job_id}")]
-        public async Task<IActionResult> GetInterviewers(int job_id)
+        [HttpGet("GetAllInterviewers")]
+        public async Task<IActionResult> GetInterviewers([FromQuery] int job_id)
         {
             try
             {
@@ -109,9 +109,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("JobSkills/{job_id}")]
+        [HttpGet("JobSkills")]
         [Authorize(Roles = "Admin, Interviewer")]
-        public async Task<IActionResult> fetchJobSkills(int job_id)
+        public async Task<IActionResult> fetchJobSkills([FromQuery] int job_id)
         {
             try
             {
@@ -142,9 +142,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("GetAllShorlistedCandidates/{job_id}")]
+        [HttpGet("GetAllShorlistedCandidates")]
         [Authorize(Roles = "Admin, Reviewer, Recruiter, Viewer")]
-        public async Task<IActionResult> getAllShortlistedCandidates(int job_id)
+        public async Task<IActionResult> getAllShortlistedCandidates([FromQuery] int job_id)
         {
             try
             {
@@ -244,9 +244,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("GetSkillDataForInterview/{interview_id}")]
+        [HttpGet("GetSkillDataForInterview")]
         [Authorize(Roles = "Admin, Interviewer, HR")]
-        public async Task<IActionResult> getSkillData(int interview_id)
+        public async Task<IActionResult> getSkillData([FromQuery] int interview_id)
         {
             try
             {
@@ -278,9 +278,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("CheckCandidateInterviewHistory/{interview_id}")]
+        [HttpGet("CheckCandidateInterviewHistory")]
         [Authorize(Roles = "Admin, HR, Interviewer")]
-        public async Task<IActionResult> checkCandidateInterviewHistory(int interview_id)
+        public async Task<IActionResult> checkCandidateInterviewHistory([FromQuery]int interview_id)
         {
             try
             {
@@ -312,9 +312,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("GetSelectedCandidates/{job_id}")]
+        [HttpGet("GetSelectedCandidates")]
         [Authorize(Roles = "Admin, HR, Viewer")]
-        public async Task<IActionResult> getSelectedCandidates(int job_id)
+        public async Task<IActionResult> getSelectedCandidates([FromQuery] int job_id)
         {
             try
             {
@@ -346,13 +346,13 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpPost("CandidateInterview")]
+        [HttpGet("CandidateInterview")]
         [Authorize(Roles = "Admin, Recruiter, Candidate")]
-        public async Task<IActionResult> fetchCandidateInterviews([FromBody] InterviewDtos.CandidateInterviewReq req)
+        public async Task<IActionResult> fetchCandidateInterviews([FromQuery] int job_id, [FromQuery] string candidate_id)
         {
             try
             {
-                var res = await _scheduleService.FetchCandidateInterview(req);
+                var res = await _scheduleService.FetchCandidateInterview(job_id, candidate_id);
                 return Ok(new
                 {
                     success = true,
@@ -390,7 +390,7 @@ namespace RecruitmentApi.Controllers
 
         }
 
-        [HttpPost("UpdateInterviewStatus")]
+        [HttpPut("UpdateInterviewStatus")]
         [Authorize(Roles = "Admin, HR, Interviewer")]
         public async Task<IActionResult> updateCandidateStatus([FromBody] InterviewDtos.InterviewStatusUpdateReq req)
         {
@@ -399,7 +399,7 @@ namespace RecruitmentApi.Controllers
                 if (req.status.IsNullOrEmpty())
                     throw new ArgumentException("Invalid input provided");
 
-                await _scheduleService.UpdateCandidateInterviewStatus(req.interview_id, req.status);
+                await _scheduleService.UpdateCandidateInterviewStatus(req.interview_id, req.status, req.user_id);
                 return Ok(new
                 {
                     success = true,
@@ -445,9 +445,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpDelete("DeleteCandidateInterview/{interview_id}")]
+        [HttpDelete("DeleteCandidateInterview")]
         [Authorize(Roles = "Admin, Recruiter")]
-        public async Task<IActionResult> deleteCandiateInterview(int interview_id)
+        public async Task<IActionResult> deleteCandiateInterview([FromQuery]int interview_id)
         {
             try
             {

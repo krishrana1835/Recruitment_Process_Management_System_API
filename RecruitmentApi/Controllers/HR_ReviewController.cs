@@ -17,9 +17,9 @@ namespace RecruitmentApi.Controllers
             _service = service;
         }
 
-        [HttpGet("GetReview/{interview_id}/{user_id}")]
+        [HttpGet("GetReview")]
         [Authorize(Roles = "Admin, HR")]
-        public async Task<IActionResult> getHrReview(int interview_id, string user_id)
+        public async Task<IActionResult> getHrReview([FromQuery]int interview_id,[FromQuery] string user_id)
         {
             try
             {

@@ -30,8 +30,8 @@ namespace RecruitmentApi.Services
             var data = await _context.Roles.ToListAsync();
             var roles = data.Select(r => new RoleDtos.RoleDto
             {
-                role_id = r.role_id,
-                role_name = r.role_name
+                role_id = r.RoleId,
+                role_name = r.RoleName
             }).ToList();
             return roles;
         }
@@ -44,21 +44,21 @@ namespace RecruitmentApi.Services
         public async Task<List<RoleDtos.RoleDto?>> GetRolesAsync(string email)
         {
             //Fetching All roles of user
-            var user = await _context.Users.Include(r => r.roles).FirstOrDefaultAsync(u => u.email == email);
+            var user = await _context.Users.Include(r => r.Roles).FirstOrDefaultAsync(u => u.Email == email);
 
             //User not available
             if (user == null)
                 return null;
 
             //User do not have any role
-            if (user.roles == null)
+            if (user.Roles == null)
                 return null;
 
             //Converting Roles into List of RoleDto
-            var roles = user.roles.Select(r => new RoleDtos.RoleDto
+            var roles = user.Roles.Select(r => new RoleDtos.RoleDto
             {
-                role_id = r.role_id,
-                role_name = r.role_name,
+                role_id = r.RoleId,
+                role_name = r.RoleName,
             }).ToList();
 
             return roles;

@@ -5,17 +5,17 @@ namespace RecruitmentApi.Models;
 
 public partial class Candidate_Skill
 {
-    public int candidate_skill_id { get; set; }
+    public int CandidateSkillId { get; set; }
 
-    public int years_experience { get; set; }
+    public int YearsExperience { get; set; }
 
-    public int skill_id { get; set; }
+    public int SkillId { get; set; }
 
-    public string candidate_id { get; set; } = null!;
+    public string CandidateId { get; set; } = null!;
 
-    public virtual Candidate candidate { get; set; } = null!;
+    public virtual Candidate Candidate { get; set; } = null!;
 
-    public virtual ICollection<Interview_Feedback> Interview_Feedbacks { get; set; } = new List<Interview_Feedback>();
+    public virtual ICollection<Interview_Feedback> InterviewFeedbacks { get; set; } = new List<Interview_Feedback>();
 
-    public virtual Skill skill { get; set; } = null!;
+    public virtual Skill Skill { get; set; } = null!;
 }

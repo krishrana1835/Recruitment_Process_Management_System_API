@@ -17,28 +17,28 @@ namespace RecruitmentApi.Services
 
         public async Task<HrReviewDtos.ReviewDto?> getHrReview(int interview_id, string user_id)
         {
-            if (!(await _context.Interviews.AnyAsync(i => i.interview_id == interview_id))) throw new NullReferenceException("Interview does not exist");
+            if (!(await _context.Interviews.AnyAsync(i => i.InterviewId == interview_id))) throw new NullReferenceException("Interview does not exist");
 
-            if (!(await _context.Users.AnyAsync(u => u.user_id == user_id))) throw new NullReferenceException("User does not exist");
+            if (!(await _context.Users.AnyAsync(u => u.UserId == user_id))) throw new NullReferenceException("User does not exist");
 
-            var review = await _context.HR_Reviews.FirstOrDefaultAsync(i => i.interview_id == interview_id && i.user_id == user_id);
+            var review = await _context.HR_Reviews.FirstOrDefaultAsync(i => i.InterviewId == interview_id && i.UserId == user_id);
 
             if (review == null)
                 return null;
 
             return new HrReviewDtos.ReviewDto
             {
-                communication_rating = review.communication_rating,
-                teamwork_rating = review.teamwork_rating,
-                adaptability_rating = review.adaptability_rating,
-                leadership_rating = review.leadership_rating,
-                strengths = review.strengths,
-                areas_for_improvement = review.areas_for_improvement,
-                training_recommendations = review.training_recommendations,
-                career_path_notes = review.career_path_notes,
-                overall_rating = review.overall_rating,
-                interview_id = review.interview_id,
-                user_id = review.user_id,
+                communication_rating = review.CommunicationRating,
+                teamwork_rating = review.TeamworkRating,
+                adaptability_rating = review.AdaptabilityRating,
+                leadership_rating = review.LeadershipRating,
+                strengths = review.Strengths,
+                areas_for_improvement = review.AreasForImprovement,
+                training_recommendations = review.TrainingRecommendations,
+                career_path_notes = review.CareerPathNotes,
+                overall_rating = review.OverallRating,
+                interview_id = review.InterviewId,
+                user_id = review.UserId,
             };
         }
 
@@ -48,43 +48,43 @@ namespace RecruitmentApi.Services
                 req.training_recommendations.IsNullOrEmpty() || req.career_path_notes.IsNullOrEmpty())
                 throw new ArgumentException("Invalid input");
 
-            var interveiw = await _context.Interviews.FirstOrDefaultAsync(i => i.interview_id == req.interview_id);
+            var interveiw = await _context.Interviews.FirstOrDefaultAsync(i => i.InterviewId == req.interview_id);
             if (interveiw == null)
                 throw new NullReferenceException("Interview does not exist");
 
-            interveiw.score = req.total_score;
+            interveiw.Score = req.total_score;
 
-            var review = await _context.HR_Reviews.FirstOrDefaultAsync(i => i.user_id == req.user_id && i.interview_id == req.interview_id);
+            var review = await _context.HR_Reviews.FirstOrDefaultAsync(i => i.UserId == req.user_id && i.InterviewId == req.interview_id);
 
             if(review == null)
             {
                 var newReview = new HR_Review
                 {
-                    communication_rating = req.communication_rating,
-                    teamwork_rating = req.teamwork_rating,
-                    adaptability_rating = req.adaptability_rating,
-                    leadership_rating = req.leadership_rating,
-                    strengths = req.strengths,
-                    areas_for_improvement = req.areas_for_improvement,
-                    training_recommendations = req.training_recommendations,
-                    career_path_notes = req.career_path_notes,
-                    overall_rating = req.overall_rating,
-                    interview_id = req.interview_id,
-                    user_id = req.user_id,
+                    CommunicationRating = req.communication_rating,
+                    TeamworkRating = req.teamwork_rating,
+                    AdaptabilityRating = req.adaptability_rating,
+                    LeadershipRating = req.leadership_rating,
+                    Strengths = req.strengths,
+                    AreasForImprovement = req.areas_for_improvement,
+                    TrainingRecommendations = req.training_recommendations,
+                    CareerPathNotes = req.career_path_notes,
+                    OverallRating = req.overall_rating,
+                    InterviewId = req.interview_id,
+                    UserId = req.user_id,
                 };
 
                 await _context.HR_Reviews.AddAsync(newReview);
             }else
             {
-                review.communication_rating = req.communication_rating;
-                review.teamwork_rating = req.teamwork_rating;
-                review.adaptability_rating = req.adaptability_rating;
-                review.leadership_rating = req.leadership_rating;
-                review.strengths = req.strengths;
-                review.areas_for_improvement = req.areas_for_improvement;
-                review.training_recommendations = req.training_recommendations;
-                review.career_path_notes = req.career_path_notes;
-                review.overall_rating = req.overall_rating;
+                review.CommunicationRating = req.communication_rating;
+                review.TeamworkRating = req.teamwork_rating;
+                review.AdaptabilityRating = req.adaptability_rating;
+                review.LeadershipRating = req.leadership_rating;
+                review.Strengths = req.strengths;
+                review.AreasForImprovement = req.areas_for_improvement;
+                review.TrainingRecommendations = req.training_recommendations;
+                review.CareerPathNotes = req.career_path_notes;
+                review.OverallRating = req.overall_rating;
             }
 
             await _context.SaveChangesAsync();

@@ -61,150 +61,150 @@ public partial class AppDbContext : DbContext
     {
         modelBuilder.Entity<Candidate>(entity =>
         {
-            entity.HasKey(e => e.candidate_id);
+            entity.HasKey(e => e.CandidateId);
 
-            entity.HasIndex(e => e.email, "UQ_Candidates_Email").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ_Candidates_Email").IsUnique();
 
-            entity.Property(e => e.candidate_id)
+            entity.Property(e => e.CandidateId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.created_at).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.email).HasMaxLength(255);
-            entity.Property(e => e.full_name).HasMaxLength(255);
-            entity.Property(e => e.phone).HasMaxLength(20);
-            entity.Property(e => e.resume_path).HasMaxLength(500);
-            entity.Property(e => e.password).HasMaxLength(255);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.Email).HasMaxLength(255);
+            entity.Property(e => e.FullName).HasMaxLength(255);
+            entity.Property(e => e.Phone).HasMaxLength(20);
+            entity.Property(e => e.ResumePath).HasMaxLength(500);
+            entity.Property(e => e.Password).HasMaxLength(255);
         });
 
         modelBuilder.Entity<Candidate_Document>(entity =>
         {
-            entity.HasKey(e => e.document_id);
+            entity.HasKey(e => e.DocumentId);
 
-            entity.Property(e => e.candidate_id)
+            entity.Property(e => e.CandidateId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.document_type).HasMaxLength(100);
-            entity.Property(e => e.file_path).HasMaxLength(500);
-            entity.Property(e => e.uploaded_at).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.verification_status)
+            entity.Property(e => e.DocumentType).HasMaxLength(100);
+            entity.Property(e => e.FilePath).HasMaxLength(500);
+            entity.Property(e => e.UploadedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.VerificationStatus)
                 .HasMaxLength(50)
                 .HasDefaultValue("Pending");
 
-            entity.HasOne(d => d.candidate).WithMany(p => p.Candidate_Documents)
-                .HasForeignKey(d => d.candidate_id)
+            entity.HasOne(d => d.Candidate).WithMany(p => p.CandidateDocuments)
+                .HasForeignKey(d => d.CandidateId)
                 .HasConstraintName("FK_Candidate_Documents_Candidates");
         });
 
         modelBuilder.Entity<Candidate_Review>(entity =>
         {
-            entity.HasKey(e => e.review_id);
+            entity.HasKey(e => e.ReviewId);
 
-            entity.Property(e => e.candidate_id)
+            entity.Property(e => e.CandidateId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.reviewed_at).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.user_id)
+            entity.Property(e => e.ReviewedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.UserId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
 
-            entity.HasOne(d => d.candidate).WithMany(p => p.Candidate_Reviews)
-                .HasForeignKey(d => d.candidate_id)
+            entity.HasOne(d => d.Candidate).WithMany(p => p.CandidateReviews)
+                .HasForeignKey(d => d.CandidateId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Candidate_Reviews_Candidates");
 
-            entity.HasOne(d => d.job).WithMany(p => p.Candidate_Reviews)
-                .HasForeignKey(d => d.job_id)
+            entity.HasOne(d => d.Job).WithMany(p => p.CandidateReviews)
+                .HasForeignKey(d => d.JobId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Candidate_Reviews_Jobs");
 
-            entity.HasOne(d => d.user).WithMany(p => p.Candidate_Reviews)
-                .HasForeignKey(d => d.user_id)
+            entity.HasOne(d => d.User).WithMany(p => p.CandidateReviews)
+                .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Candidate_Reviews_Users");
         });
 
         modelBuilder.Entity<Candidate_Skill>(entity =>
         {
-            entity.HasKey(e => e.candidate_skill_id);
+            entity.HasKey(e => e.CandidateSkillId);
 
-            entity.Property(e => e.candidate_id)
+            entity.Property(e => e.CandidateId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
 
-            entity.HasOne(d => d.candidate).WithMany(p => p.Candidate_Skills)
-                .HasForeignKey(d => d.candidate_id)
+            entity.HasOne(d => d.Candidate).WithMany(p => p.CandidateSkills)
+                .HasForeignKey(d => d.CandidateId)
                 .HasConstraintName("FK_Candidate_Skills_Candidates");
 
-            entity.HasOne(d => d.skill).WithMany(p => p.CandidateSkills)
-                .HasForeignKey(d => d.skill_id)
+            entity.HasOne(d => d.Skill).WithMany(p => p.CandidateSkills)
+                .HasForeignKey(d => d.SkillId)
                 .HasConstraintName("FK_Candidate_Skills_Skills");
         });
 
         modelBuilder.Entity<Candidate_Status_History>(entity =>
         {
-            entity.HasKey(e => e.candidate_status_id);
+            entity.HasKey(e => e.CandidateStatusId);
 
             entity.ToTable("Candidate_Status_History");
 
-            entity.Property(e => e.candidate_id)
+            entity.Property(e => e.CandidateId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.changed_at).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.changed_by)
+            entity.Property(e => e.ChangedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.ChangedBy)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.reason).HasMaxLength(500);
-            entity.Property(e => e.status).HasMaxLength(50);
+            entity.Property(e => e.Reason).HasMaxLength(500);
+            entity.Property(e => e.Status).HasMaxLength(50);
 
-            entity.HasOne(d => d.candidate).WithMany(p => p.Candidate_Status_Histories)
-                .HasForeignKey(d => d.candidate_id)
+            entity.HasOne(d => d.Candidate).WithMany(p => p.CandidateStatusHistories)
+                .HasForeignKey(d => d.CandidateId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Candidate_Status_History_Candidates");
 
-            entity.HasOne(d => d.changed_by_user).WithMany(p => p.Candidate_Status_Histories)
-                .HasForeignKey(d => d.changed_by)
+            entity.HasOne(d => d.ChangedByUser).WithMany(p => p.CandidateStatusHistories)
+                .HasForeignKey(d => d.ChangedBy)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Candidate_Status_History_Users");
 
-            entity.HasOne(d => d.job).WithMany(p => p.Candidate_Status_Histories)
-                .HasForeignKey(d => d.job_id)
+            entity.HasOne(d => d.Job).WithMany(p => p.CandidateStatusHistories)
+                .HasForeignKey(d => d.JobId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Candidate_Status_History_Jobs");
         });
 
         modelBuilder.Entity<HR_Review>(entity =>
         {
-            entity.HasKey(e => e.review_id);
+            entity.HasKey(e => e.ReviewId);
 
             entity.ToTable("HR_Review");
 
-            entity.Property(e => e.user_id)
+            entity.Property(e => e.UserId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength()
                 .IsRequired();
 
-            entity.Property(e => e.strengths).HasMaxLength(2000);
-            entity.Property(e => e.areas_for_improvement).HasMaxLength(2000);
-            entity.Property(e => e.training_recommendations).HasMaxLength(2000);
-            entity.Property(e => e.career_path_notes).HasMaxLength(2000);
+            entity.Property(e => e.Strengths).HasMaxLength(2000);
+            entity.Property(e => e.AreasForImprovement).HasMaxLength(2000);
+            entity.Property(e => e.TrainingRecommendations).HasMaxLength(2000);
+            entity.Property(e => e.CareerPathNotes).HasMaxLength(2000);
 
-            entity.HasOne(d => d.interview)
-                .WithMany(p => p.HR_Reviews)
-                .HasForeignKey(d => d.interview_id)
+            entity.HasOne(d => d.Interview)
+                .WithMany(p => p.HrReviews)
+                .HasForeignKey(d => d.InterviewId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_HR_Review_Interviews");
 
-            entity.HasOne(d => d.user)
-                .WithMany(p => p.HR_Reviews)
-                .HasForeignKey(d => d.user_id)
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.HrReviews)
+                .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_HR_Review_Users");
         });
@@ -212,88 +212,92 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Employee_Record>(entity =>
         {
-            entity.HasKey(e => e.employee_id);
+            entity.HasKey(e => e.EmployeeId);
 
-            entity.HasIndex(e => e.candidate_id, "UQ_Employee_Records_Candidate").IsUnique();
+            entity.HasIndex(e => e.CandidateId, "UQ_Employee_Records_Candidate").IsUnique();
 
-            entity.Property(e => e.employee_id)
+            entity.Property(e => e.EmployeeId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.candidate_id)
+            entity.Property(e => e.CandidateId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.offer_letter_path).HasMaxLength(500);
+            entity.Property(e => e.OfferLetterPath).HasMaxLength(500);
 
-            entity.HasOne(d => d.candidate).WithOne(p => p.Employee_Record)
-                .HasForeignKey<Employee_Record>(d => d.candidate_id)
+            entity.HasOne(d => d.Candidate).WithOne(p => p.EmployeeRecord)
+                .HasForeignKey<Employee_Record>(d => d.CandidateId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Employee_Records_Candidates");
 
-            entity.HasOne(d => d.job).WithMany(p => p.Employee_Records)
-                .HasForeignKey(d => d.job_id)
+            entity.HasOne(d => d.Job).WithMany(p => p.EmployeeRecords)
+                .HasForeignKey(d => d.JobId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Employee_Records_Jobs");
         });
 
         modelBuilder.Entity<Interview>(entity =>
         {
-            entity.HasKey(e => e.interview_id)
+            entity.HasKey(e => e.InterviewId)
                   .HasName("PK_Interviews");
 
-            entity.Property(e => e.candidate_id)
+            entity.Property(e => e.CandidateId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength()
                 .IsRequired();
 
-            entity.Property(e => e.location_or_link)
+            entity.Property(e => e.LocationOrLink)
                 .HasMaxLength(1000)
                 .IsRequired();
 
-            entity.Property(e => e.mode)
+            entity.Property(e => e.Mode)
                 .HasMaxLength(100)
                 .IsRequired();
 
-            entity.Property(e => e.scheduled_by)
+            entity.Property(e => e.ScheduledBy)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength()
                 .IsRequired();
 
-            entity.Property(e => e.start_time)
+            entity.Property(e => e.StartTime)
                 .IsRequired();
 
-            entity.Property(e => e.end_time)
+            entity.Property(e => e.EndTime)
             .IsRequired();
 
-            entity.Property(e => e.status)
+            entity.Property(e => e.AllowFeedback)
+            .HasMaxLength(20)
+            .IsRequired();
+
+            entity.Property(e => e.Status)
             .HasMaxLength(100)
             .IsRequired();
 
             // Foreign key relationships
-            entity.HasOne(d => d.candidate)
+            entity.HasOne(d => d.Candidate)
                 .WithMany(p => p.Interviews)
-                .HasForeignKey(d => d.candidate_id)
+                .HasForeignKey(d => d.CandidateId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_Interviews_Candidates");
 
-            entity.HasOne(d => d.interview_type)
+            entity.HasOne(d => d.InterviewType)
                 .WithMany(p => p.Interviews)
-                .HasForeignKey(d => d.interview_type_id)
+                .HasForeignKey(d => d.InterviewTypeId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_Interviews_Interview_Type");
 
-            entity.HasOne(d => d.job)
+            entity.HasOne(d => d.Job)
                 .WithMany(p => p.Interviews)
-                .HasForeignKey(d => d.job_id)
+                .HasForeignKey(d => d.JobId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_Interviews_Jobs");
 
-            entity.HasOne(d => d.scheduled_by_user)
+            entity.HasOne(d => d.ScheduledByUser)
                 .WithMany(p => p.ScheduledInterviews)
-                .HasForeignKey(d => d.scheduled_by)
+                .HasForeignKey(d => d.ScheduledBy)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_Interviews_Users");
         });
@@ -301,131 +305,131 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Interview_Feedback>(entity =>
         {
-            entity.HasKey(e => e.feedback_id);
+            entity.HasKey(e => e.FeedbackId);
 
             entity.ToTable("Interview_Feedback");
 
-            entity.Property(e => e.feedback_at).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.user_id)
+            entity.Property(e => e.FeedbackAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.UserId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
 
-            entity.HasOne(d => d.interview).WithMany(p => p.Interview_Feedbacks)
-                .HasForeignKey(d => d.interview_id)
+            entity.HasOne(d => d.Interview).WithMany(p => p.InterviewFeedbacks)
+                .HasForeignKey(d => d.InterviewId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Interview_Feedback_Interviews");
 
-            entity.HasOne(d => d.candidate_skill).WithMany(p => p.Interview_Feedbacks)
-                .HasForeignKey(d => d.candidate_skill_id)
+            entity.HasOne(d => d.CandidateSkill).WithMany(p => p.InterviewFeedbacks)
+                .HasForeignKey(d => d.CandidateSkillId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Interview_Feedback_CandidateSkills");
 
-            entity.HasOne(d => d.user).WithMany(p => p.Interview_Feedbacks)
-                .HasForeignKey(d => d.user_id)
+            entity.HasOne(d => d.User).WithMany(p => p.InterviewFeedbacks)
+                .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Interview_Feedback_Users");
         });
 
         modelBuilder.Entity<Interview_Type>(entity =>
         {
-            entity.HasKey(e => e.interview_type_id);
+            entity.HasKey(e => e.InterviewTypeId);
 
             entity.ToTable("Interview_Type");
 
-            entity.Property(e => e.interview_round_name).HasMaxLength(100);
-            entity.Property(e => e.process_descreption).HasMaxLength(1000);
+            entity.Property(e => e.InterviewRoundName).HasMaxLength(100);
+            entity.Property(e => e.ProcessDescreption).HasMaxLength(1000);
         });
 
         modelBuilder.Entity<Job>(entity =>
         {
-            entity.HasKey(e => e.job_id);
+            entity.HasKey(e => e.JobId);
 
-            entity.Property(e => e.created_at).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.created_by)
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.CreatedBy)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.job_title).HasMaxLength(255);
-            entity.Property(e => e.scheduled).HasMaxLength(50).HasDefaultValue("Pending");
+            entity.Property(e => e.JobTitle).HasMaxLength(255);
+            entity.Property(e => e.Scheduled).HasMaxLength(50).HasDefaultValue("Pending");
 
 
-            entity.HasOne(d => d.created_by_user).WithMany(p => p.Jobs)
-                .HasForeignKey(d => d.created_by)
+            entity.HasOne(d => d.CreatedByUser).WithMany(p => p.Jobs)
+                .HasForeignKey(d => d.CreatedBy)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Jobs_Users");
 
-            entity.HasOne(d => d.status).WithMany(p => p.Jobs)
-                .HasForeignKey(d => d.status_id)
+            entity.HasOne(d => d.Status).WithMany(p => p.Jobs)
+                .HasForeignKey(d => d.StatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Jobs_Jobs_Status");
         });
 
         modelBuilder.Entity<Jobs_Skill>(entity =>
         {
-            entity.HasKey(e => new { e.skill_id, e.job_id });
+            entity.HasKey(e => new { e.SkillId, e.JobId });
 
-            entity.Property(e => e.skill_type)
+            entity.Property(e => e.SkillType)
                 .HasMaxLength(1)
                 .IsUnicode(false)
                 .IsFixedLength();
 
-            entity.HasOne(d => d.job).WithMany(p => p.Jobs_Skills)
-                .HasForeignKey(d => d.job_id)
+            entity.HasOne(d => d.Job).WithMany(p => p.JobsSkills)
+                .HasForeignKey(d => d.JobId)
                 .HasConstraintName("FK_Jobs_Skills_Jobs");
 
-            entity.HasOne(d => d.skill).WithMany(p => p.JobsSkills)
-                .HasForeignKey(d => d.skill_id)
+            entity.HasOne(d => d.Skill).WithMany(p => p.JobsSkills)
+                .HasForeignKey(d => d.SkillId)
                 .HasConstraintName("FK_Jobs_Skills_Skills");
         });
 
         modelBuilder.Entity<Jobs_Status>(entity =>
         {
-            entity.HasKey(e => e.status_id);
+            entity.HasKey(e => e.StatusId);
 
             entity.ToTable("Jobs_Status");
 
-            entity.Property(e => e.changed_at).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.changed_by)
+            entity.Property(e => e.ChangedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.ChangedBy)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.reason).HasMaxLength(500);
-            entity.Property(e => e.status).HasMaxLength(50);
+            entity.Property(e => e.Reason).HasMaxLength(500);
+            entity.Property(e => e.Status).HasMaxLength(50);
 
-            entity.HasOne(d => d.changed_by_user).WithMany(p => p.Jobs_Statuses)
-                .HasForeignKey(d => d.changed_by)
+            entity.HasOne(d => d.ChangedByUser).WithMany(p => p.JobsStatuses)
+                .HasForeignKey(d => d.ChangedBy)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Jobs_Status_Users");
         });
 
         modelBuilder.Entity<Notification>(entity =>
         {
-            entity.HasKey(e => e.notification_id);
+            entity.HasKey(e => e.NotificationId);
 
-            entity.Property(e => e.created_at).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.message).HasMaxLength(1000);
-            entity.Property(e => e.status)
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.Message).HasMaxLength(1000);
+            entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasDefaultValue("Unread");
-            entity.Property(e => e.user_id)
+            entity.Property(e => e.UserId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
 
-            entity.HasOne(d => d.user).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.user_id)
+            entity.HasOne(d => d.User).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Notifications_Users");
         });
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.role_id);
+            entity.HasKey(e => e.RoleId);
 
-            entity.Property(e => e.role_name).HasMaxLength(100);
+            entity.Property(e => e.RoleName).HasMaxLength(100);
 
-            entity.HasMany(d => d.users).WithMany(p => p.roles)
+            entity.HasMany(d => d.Users).WithMany(p => p.Roles)
                 .UsingEntity<Dictionary<string, object>>(
                     "Users_Role",
                     r => r.HasOne<User>().WithMany()
@@ -456,20 +460,20 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.user_id);
+            entity.HasKey(e => e.UserId);
 
-            entity.HasIndex(e => e.email, "UQ_Users_Email").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ_Users_Email").IsUnique();
 
-            entity.Property(e => e.user_id)
+            entity.Property(e => e.UserId)
                 .HasMaxLength(8)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.created_at).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.email).HasMaxLength(255);
-            entity.Property(e => e.name).HasMaxLength(255);
-            entity.Property(e => e.password_hash).HasMaxLength(255);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.Email).HasMaxLength(255);
+            entity.Property(e => e.Name).HasMaxLength(255);
+            entity.Property(e => e.PasswordHash).HasMaxLength(255);
 
-            entity.HasMany(d => d.AttendedInterviews).WithMany(p => p.users)
+            entity.HasMany(d => d.AttendedInterviews).WithMany(p => p.Users)
                 .UsingEntity<Dictionary<string, object>>(
                     "Interview_Panel",
                     r => r.HasOne<Interview>().WithMany()

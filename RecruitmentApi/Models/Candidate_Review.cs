@@ -5,21 +5,21 @@ namespace RecruitmentApi.Models;
 
 public partial class Candidate_Review
 {
-    public int review_id { get; set; }
+    public int ReviewId { get; set; }
 
-    public string comments { get; set; } = null!;
+    public string Comments { get; set; } = null!;
 
-    public DateTime reviewed_at { get; set; }
+    public DateTime ReviewedAt { get; set; }
 
-    public string candidate_id { get; set; } = null!;
+    public string CandidateId { get; set; } = null!;
 
-    public int job_id { get; set; }
+    public int JobId { get; set; }
 
-    public string user_id { get; set; } = null!;
+    public string UserId { get; set; } = null!;
 
-    public virtual Candidate candidate { get; set; } = null!;
+    public virtual Candidate Candidate { get; set; } = null!;
 
-    public virtual Job job { get; set; } = null!;
+    public virtual Job Job { get; set; } = null!;
 
-    public virtual User user { get; set; } = null!;
+    public virtual User User { get; set; } = null!;
 }

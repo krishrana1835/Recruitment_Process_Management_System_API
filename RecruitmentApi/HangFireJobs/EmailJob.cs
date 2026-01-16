@@ -43,12 +43,12 @@ namespace RecruitmentApi.HangFireJobs
 
             var toEmails = email.Recipients
                 .Where(r => r.Type == RecipientType.To)
-                .Select(r => r.email)
+                .Select(r => r.Email)
                 .ToList();
 
             var ccEmails = email.Recipients
                 .Where(r => r.Type == RecipientType.Cc)
-                .Select(r => r.email)
+                .Select(r => r.Email)
                 .ToList();
 
             await _emailSender.SendAsync(

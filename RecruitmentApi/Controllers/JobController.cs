@@ -36,9 +36,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("GetScheduledJobs/{filter}")]
+        [HttpGet("GetScheduledJobs")]
         [Authorize(Roles = "Admin, Candidate,Reviewer, Recruiter, Interviewer, HR, Viewer")]
-        public async Task<IActionResult> getScheduledJobs(string filter)
+        public async Task<IActionResult> getScheduledJobs([FromQuery] string filter)
         {
             try
             {
@@ -61,9 +61,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("GetAllJobs/{sorted}")]
+        [HttpGet("GetAllJobs")]
         [Authorize(Roles = "Admin, HR")]
-        public async Task<IActionResult> GetAllJobs(bool sorted)
+        public async Task<IActionResult> GetAllJobs([FromQuery] bool sorted)
         {
             try
             {
@@ -85,9 +85,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("{job_id:int}")]
-        [Authorize(Roles = "Admin,Candidate, Reviewer, Recruiter, Viewer")]
-        public async Task<IActionResult> getJob(int job_id)
+        [HttpGet("Job")]
+        [Authorize(Roles = "Admin,Candidate, Reviewer, Recruiter, Viewer, Interviewer")]
+        public async Task<IActionResult> getJob([FromQuery] int job_id)
         {
             try
             {
@@ -142,9 +142,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpDelete("{job_id:int}")]
+        [HttpDelete]
         [Authorize(Roles = "Admin,Recruiter")]
-        public async Task<IActionResult> DeleteJob(int job_id)
+        public async Task<IActionResult> DeleteJob([FromQuery] int job_id)
         {
             try
             {

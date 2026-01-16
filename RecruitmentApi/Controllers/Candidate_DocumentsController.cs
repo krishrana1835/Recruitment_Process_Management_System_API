@@ -19,9 +19,9 @@ namespace RecruitmentApi.Controllers
         }
 
 
-        [HttpGet("{candidate_id}")]
+        [HttpGet]
         [Authorize(Roles = "Candidate, HR, Admin, Viewer")]
-        public async Task<IActionResult> getCandidateDocuments(string candidate_id)
+        public async Task<IActionResult> getCandidateDocuments([FromQuery] string candidate_id)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpPost("UpdateUploadStatus")]
+        [HttpPut("UpdateUploadStatus")]
         [Authorize(Roles = "Admin, HR, Admin")]
         public async Task<IActionResult> getUploadStatus(Candidate_DocumentDtos.ChangeStatusReq req)
         {
@@ -92,9 +92,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("GetUploadStatus/{candidate_id}")]
+        [HttpGet("GetUploadStatus")]
         [Authorize(Roles = "Candidate")]
-        public async Task<IActionResult> getUploadStatus(string candidate_id)
+        public async Task<IActionResult> getUploadStatus([FromQuery] string candidate_id)
         {
             try
             {
@@ -135,7 +135,7 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpPost("UpdateVerificationStatus")]
+        [HttpPut("UpdateVerificationStatus")]
         [Authorize(Roles = "Admin, HR, Admin")]
         public async Task<IActionResult> updateVerification(Candidate_DocumentDtos.VerificationStatus req)
         {

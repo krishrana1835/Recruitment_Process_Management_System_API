@@ -17,9 +17,9 @@ namespace RecruitmentApi.Controllers
             _service = service;
         }
 
-        [HttpGet("GetApplications/{candidate_id}")]
+        [HttpGet("GetApplications")]
         [Authorize(Roles = "Candidate")]
-        public async Task<IActionResult> checkAppliedForJob(string candidate_id)
+        public async Task<IActionResult> checkAppliedForJob([FromQuery] string candidate_id)
         {
             try
             {
@@ -32,9 +32,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("GetAppliedJobs/{candidate_id}")]
+        [HttpGet("GetAppliedJobs")]
         [Authorize(Roles = "Candidate, Admin")]
-        public async Task<IActionResult> getAppliedJobs(string candidate_id)
+        public async Task<IActionResult> getAppliedJobs([FromQuery] string candidate_id)
         {
             try
             {
@@ -75,7 +75,7 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpPost("UpdateCandidateStatus")]
+        [HttpPut("UpdateCandidateStatus")]
         [Authorize(Roles = "Admin, Reviewer")]
         public async Task<IActionResult> updateCandidateStatus([FromBody] Candidate_Status_HistoryDtos.UpdateCandidateStatusRequest dto)
         {
@@ -101,13 +101,13 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpPost("GetJobApplications")]
+        [HttpGet("GetJobApplications")]
         [Authorize(Roles = "Reviewer, Admin, Viewer")]
-        public async Task<IActionResult> getJobApplications([FromBody]Candidate_Status_HistoryDtos.JobapplicationRequest dto)
+        public async Task<IActionResult> getJobApplications([FromQuery]int JobId)
         {
             try
             {
-                var response = await _service.GetJobApplications(dto.job_id);
+                var response = await _service.GetJobApplications(JobId);
                 return Ok(response);
             }catch(Exception ex)
             {
@@ -115,13 +115,13 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpPost("CheckApplication")]
+        [HttpGet("CheckApplication")]
         [Authorize(Roles = "Candidate")]
-        public async Task<IActionResult> checkAppliedForJob([FromBody] Candidate_Status_HistoryDtos.JobApplicationByCandidate dto)
+        public async Task<IActionResult> checkAppliedForJob([FromQuery] int job_id,[FromQuery] string candidate_id)
         {
             try
             {
-                var response = await _service.CheckForApplicationAsync(dto);
+                var response = await _service.CheckForApplicationAsync(job_id, candidate_id);
                 return Ok(new { applied = response });
             }
             catch (Exception ex)

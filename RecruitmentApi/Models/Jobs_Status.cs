@@ -5,17 +5,17 @@ namespace RecruitmentApi.Models;
 
 public partial class Jobs_Status
 {
-    public int status_id { get; set; }
+    public int StatusId { get; set; }
 
-    public string status { get; set; } = null!;
+    public string Status { get; set; } = null!;
 
-    public string? reason { get; set; }
+    public string? Reason { get; set; }
 
-    public DateTime changed_at { get; set; }
+    public DateTime ChangedAt { get; set; }
 
-    public string changed_by { get; set; } = null!;
+    public string ChangedBy { get; set; } = null!;
 
     public virtual ICollection<Job> Jobs { get; set; } = new List<Job>();
 
-    public virtual User changed_by_user { get; set; } = null!;
+    public virtual User ChangedByUser { get; set; } = null!;
 }

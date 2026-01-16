@@ -50,7 +50,7 @@ namespace RecruitmentApi.Controllers
                 return Unauthorized("Invalid password");
 
             // Check if user has the selected role
-            if (!logindata.Roles.Any(r => r.role_name == login.Role))
+            if (!logindata.Roles.Any(r => r.RoleName == login.Role))
                 return Unauthorized("User does not have the selected role");
 
             //Generate token

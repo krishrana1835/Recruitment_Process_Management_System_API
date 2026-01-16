@@ -7,31 +7,31 @@ namespace RecruitmentApi.Models;
 
 public partial class Candidate
 {
-    public string candidate_id { get; set; } = null!;
+    public string CandidateId { get; set; } = null!;
 
-    public string full_name { get; set; } = null!;
+    public string FullName { get; set; } = null!;
 
-    public string email { get; set; } = null!;
+    public string Email { get; set; } = null!;
 
-    public string? phone { get; set; }
+    public string? Phone { get; set; }
 
-    public string resume_path { get; set; } = null!;
+    public string ResumePath { get; set; } = null!;
 
-    public Boolean doc_upload { get; set; } = false;
+    public Boolean DocUpload { get; set; } = false;
 
-    public DateTime created_at { get; set; }
+    public DateTime CreatedAt { get; set; }
 
-    public string password { get; set; } = null!;
+    public string Password { get; set; } = null!;
 
-    public virtual ICollection<Candidate_Document> Candidate_Documents { get; set; } = new List<Candidate_Document>();
+    public virtual ICollection<Candidate_Document> CandidateDocuments { get; set; } = new List<Candidate_Document>();
 
-    public virtual ICollection<Candidate_Review> Candidate_Reviews { get; set; } = new List<Candidate_Review>();
+    public virtual ICollection<Candidate_Review> CandidateReviews { get; set; } = new List<Candidate_Review>();
 
-    public virtual ICollection<Candidate_Skill> Candidate_Skills { get; set; } = new List<Candidate_Skill>();
+    public virtual ICollection<Candidate_Skill> CandidateSkills { get; set; } = new List<Candidate_Skill>();
 
-    public virtual ICollection<Candidate_Status_History> Candidate_Status_Histories { get; set; } = new List<Candidate_Status_History>();
+    public virtual ICollection<Candidate_Status_History> CandidateStatusHistories { get; set; } = new List<Candidate_Status_History>();
 
-    public virtual Employee_Record? Employee_Record { get; set; }
+    public virtual Employee_Record? EmployeeRecord { get; set; }
 
     public virtual ICollection<Interview> Interviews { get; set; } = new List<Interview>();
 }

@@ -35,7 +35,6 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetLastCandidateId")]
-        [Authorize(Roles = "Admin, Recruiter")]
         public async Task<IActionResult> GetLastCandidateId()
         {
             try
@@ -59,9 +58,9 @@ namespace RecruitmentApi.Controllers
         /// <returns>
         /// An <see cref="IActionResult"/> that represents the outcome of the operation.
         /// </returns>
-        [HttpGet("GetCandidateProfile/{candidateId}")]
+        [HttpGet("GetCandidateProfile")]
         [Authorize(Roles = "Admin, Reviewer, Recruiter, Viewer")]
-        public async Task<IActionResult> GetCandidateProfile(string candidateId)
+        public async Task<IActionResult> GetCandidateProfile([FromQuery] string candidateId)
         {
             try
             {
@@ -76,9 +75,9 @@ namespace RecruitmentApi.Controllers
             
         }
 
-        [HttpGet("GetCandidateDashboardProfile/{candidateId}")]
+        [HttpGet("GetCandidateDashboardProfile")]
         [Authorize(Roles = "Candidate, Reviewer, Viewer, Admin")]
-        public async Task<IActionResult> GetCandidateDashProfile(string candidateId)
+        public async Task<IActionResult> GetCandidateDashProfile([FromQuery] string candidateId)
         {
             try
             {
@@ -93,9 +92,9 @@ namespace RecruitmentApi.Controllers
 
         }
 
-        [HttpGet("GetResume/{candidate_id}")]
+        [HttpGet("GetResume")]
         [Authorize(Roles = "Candidate")]
-        public async Task<IActionResult> GetCandidateResume(string candidate_id)
+        public async Task<IActionResult> GetCandidateResume([FromQuery] string candidate_id)
         {
             try
             {

@@ -29,58 +29,13 @@ public class FileUploadController : ControllerBase
         }
     }
 
-    [HttpPost("CandidateAadhar")]
+    [HttpPost("UploadDocument")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UploadAadhar([FromForm] UploadCandidateDocuments model)
+    public async Task<IActionResult> UploadDoc([FromForm] UploadCandidateDocuments model)
     {
         try
         {
             var url = await _fileUploadService.UploadCandidateResumeAsync(model.File, "documents/" + model.foldername);
-            return Ok(new { success = true, url });
-        }
-        catch (Exception ex)
-        {
-            return Problem(ex.Message);
-        }
-    }
-
-    [HttpPost("CandidatePan")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UploadPan([FromForm] UploadCandidateDocuments model)
-    {
-        try
-        {
-            var url = await _fileUploadService.UploadCandidateResumeAsync(model.File, "documents/" + model.foldername);
-            return Ok(new { success = true, url });
-        }
-        catch (Exception ex)
-        {
-            return Problem(ex.Message);
-        }
-    }
-
-    [HttpPost("CandidateCollegeResults")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UploadPCollegeResults([FromForm] UploadCandidateDocuments model)
-    {
-        try
-        {
-            var url = await _fileUploadService.UploadCandidateResumeAsync(model.File, "documents/" + model.foldername);
-            return Ok(new { success = true, url });
-        }
-        catch (Exception ex)
-        {
-            return Problem(ex.Message);
-        }
-    }
-    
-    [HttpPost("CandidateHscOrSscResult")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UploadHscOrSscResult([FromForm] UploadCandidateDocuments model)
-    {
-        try
-        {
-            var url = await _fileUploadService.UploadCandidateResumeAsync(model.File, "documents/"+model.foldername);
             return Ok(new { success = true, url });
         }
         catch (Exception ex)
@@ -105,7 +60,7 @@ public class FileUploadController : ControllerBase
     }
 
     [HttpDelete("RemoveDocument")]
-    [Authorize(Roles = "Admin, Candidate")]
+    [Authorize(Roles = "Admin, Candidate, HR")]
     public async Task<IActionResult> Deletedocument([FromBody] DeleteResumeFile dto)
     {
         try

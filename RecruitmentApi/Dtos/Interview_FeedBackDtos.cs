@@ -81,10 +81,4 @@ public class Interview_FeedBackDtos
         public List<SkillReviewDto> preferred_skills { get; set; } = new();
         public List<SkillReviewDto> required_skills { get; set; } = new();
     }
-
-    public class GetFeedbackReq
-    {
-        public string user_id { get; set; } = null!;
-        public int interview_id { get; set; }
-    }
 }

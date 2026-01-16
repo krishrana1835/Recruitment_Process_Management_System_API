@@ -49,13 +49,13 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpPost("GetFeedback")]
+        [HttpGet("GetFeedback")]
         [Authorize(Roles = "Admin, HR, Interviewer")]
-        public async Task<IActionResult> getFeedback([FromBody] Interview_FeedBackDtos.GetFeedbackReq req)
+        public async Task<IActionResult> getFeedback([FromQuery] int interview_id,[FromQuery] string user_id)
         {
             try
             {
-                var res = await _service.GetCandidateFeedbackForInterview(req.interview_id, req.user_id);
+                var res = await _service.GetCandidateFeedbackForInterview(interview_id, user_id);
                 return Ok(new
                 {
                     success = true,

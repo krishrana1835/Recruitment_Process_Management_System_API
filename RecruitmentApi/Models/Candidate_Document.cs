@@ -5,17 +5,17 @@ using RecruitmentApi.Models;
 
 public partial class Candidate_Document
 {
-    public int document_id { get; set; }
+    public int DocumentId { get; set; }
 
-    public string document_type { get; set; } = null!;
+    public string DocumentType { get; set; } = null!;
 
-    public string file_path { get; set; } = null!;
+    public string FilePath { get; set; } = null!;
 
-    public string verification_status { get; set; } = null!;
+    public string VerificationStatus { get; set; } = null!;
 
-    public DateTime uploaded_at { get; set; }
+    public DateTime UploadedAt { get; set; }
 
-    public string candidate_id { get; set; } = null!;
+    public string CandidateId { get; set; } = null!;
 
-    public virtual Candidate candidate { get; set; } = null!;
+    public virtual Candidate Candidate { get; set; } = null!;
 }

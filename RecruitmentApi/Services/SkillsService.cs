@@ -96,16 +96,16 @@ namespace RecruitmentApi.Services
                 throw new Exception("Candidate Id is null");
 
             var candidate = await _context.Candidates
-                .FirstOrDefaultAsync(r => r.candidate_id == candidate_id);
+                .FirstOrDefaultAsync(r => r.CandidateId == candidate_id);
 
             if (candidate == null)
                 throw new Exception("Candidate not found");
 
             var newSkill = new Candidate_Skill
             {
-                candidate_id = candidate_id,
-                skill_id = skill_id,
-                years_experience = 0
+                CandidateId = candidate_id,
+                SkillId = skill_id,
+                YearsExperience = 0
             };
 
             await _context.Candidate_Skills.AddAsync(newSkill);
@@ -118,16 +118,16 @@ namespace RecruitmentApi.Services
                 throw new Exception("Job Id is invalid");
 
             var job = await _context.Jobs
-                .FirstOrDefaultAsync(r => r.job_id == job_id);
+                .FirstOrDefaultAsync(r => r.JobId == job_id);
 
             if (job == null)
                 throw new Exception("Job not found");
 
             var newSkill = new Jobs_Skill
             {
-                job_id = job_id,
-                skill_id = skill_id,
-                skill_type = skilltype
+                JobId = job_id,
+                SkillId = skill_id,
+                SkillType = skilltype
             };
 
             await _context.Jobs_Skills.AddAsync(newSkill);

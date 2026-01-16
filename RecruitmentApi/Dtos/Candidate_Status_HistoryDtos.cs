@@ -42,18 +42,8 @@ namespace RecruitmentApi.Dtos
             public int candidate_status_id { get; set; }
             public string status { get; set; } = null!;
             public DateTime changed_at { get; set; }
+            public string? reason { get; set; }
             public virtual JobDtos.ListJobStatus job { get; set; } = null!;
-        }
-
-        public class ListCandidateJobApplications
-        {
-            public virtual CandidateDtos.CandidateListDto candidate { get; set; } = null!;
-
-        }
-
-        public class JobapplicationRequest
-        {
-            public int job_id { get; set; }
         }
     }
 }

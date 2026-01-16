@@ -38,6 +38,9 @@ namespace RecruitmentApi.Dtos
         {
             public int document_id { get; set; }
             public string verification_status { get; set; } = null!;
+
+            public string user_id { get; set; } = null!;
+            public int job_id { get; set; }
         }
     }
 }

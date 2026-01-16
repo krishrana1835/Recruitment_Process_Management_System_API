@@ -42,7 +42,7 @@ namespace RecruitmentApi.Services
         /// <returns>The <see cref="User"/> object for the specified ID, or null if not found.</returns>
         public async Task<User?> GetUserAsync(string id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.user_id.Equals(id));
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserId.Equals(id));
             return user;
         }
 
@@ -52,8 +52,8 @@ namespace RecruitmentApi.Services
         /// <returns>The user ID of the last created user, or null if no users exist.</returns>
         public async Task<String?> GetLastUserIdAsync()
         {
-            var user = await _context.Users.OrderByDescending(u => u.created_at).FirstOrDefaultAsync();
-            return user?.user_id;
+            var user = await _context.Users.OrderByDescending(u => u.CreatedAt).FirstOrDefaultAsync();
+            return user?.UserId;
         }
 
         /// <summary>
@@ -62,22 +62,22 @@ namespace RecruitmentApi.Services
         /// <returns>A list of <see cref="UserDtos.UserInfoDto"/> objects containing basic user information, or null if no users exist.</returns>
         public async Task<List<UserDtos.UserInfoDto>?> GetAllUserInfoAsync()
         {
-            var users = await _context.Users.Include(x => x.roles).ToListAsync();
+            var users = await _context.Users.Include(x => x.Roles).ToListAsync();
 
             if (users == null)
                 return null;
 
             var data = users.Select(user => new UserDtos.UserInfoDto
             {
-                user_id = user.user_id,
-                name = user.name,
-                email = user.email,
-                roles = user.roles.Select(r => new RoleDtos.RoleDto
+                user_id = user.UserId,
+                name = user.Name,
+                email = user.Email,
+                roles = user.Roles.Select(r => new RoleDtos.RoleDto
                 {
-                    role_id = r.role_id,
-                    role_name = r.role_name
+                    role_id = r.RoleId,
+                    role_name = r.RoleName
                 }).ToList(),
-                created_at = user.created_at
+                created_at = user.CreatedAt
             }).ToList();
 
             return data;
@@ -91,63 +91,63 @@ namespace RecruitmentApi.Services
         public async Task<UserDtos.UserProfileDto?> GetUserProfileAsync(string id)
         {
             var data = await _context.Users
-    .Include(r => r.roles)
-    .Include(r => r.Candidate_Reviews)
-    .Include(r => r.Interview_Feedbacks)
+    .Include(r => r.Roles)
+    .Include(r => r.CandidateReviews)
+    .Include(r => r.InterviewFeedbacks)
     .Include(r => r.Jobs)
-        .ThenInclude(j => j.status) // 👈 include the status of each job
-    .FirstOrDefaultAsync(r => r.user_id == id);
+        .ThenInclude(j => j.Status) // 👈 include the status of each job
+    .FirstOrDefaultAsync(r => r.UserId == id);
 
 
             if (data == null) return null;
 
             var user = new UserDtos.UserProfileDto
             {
-                user_id = data.user_id,
-                name = data.name,
-                email = data.email,
+                user_id = data.UserId,
+                name = data.Name,
+                email = data.Email,
 
-                roles = data.roles.Select(r => new RoleDtos.RoleDto
+                roles = data.Roles.Select(r => new RoleDtos.RoleDto
                 {
-                    role_id = r.role_id,
-                    role_name = r.role_name
+                    role_id = r.RoleId,
+                    role_name = r.RoleName
                 }).ToList(),
 
-                created_at = data.created_at,
+                created_at = data.CreatedAt,
 
-                interview_feedbacks = data.Interview_Feedbacks.Select(r => new Interview_FeedBackDtos.Interview_FeedbackDto
+                interview_feedbacks = data.InterviewFeedbacks.Select(r => new Interview_FeedBackDtos.Interview_FeedbackDto
                 {
-                    feedback_id = r.feedback_id,
-                    rating = r.concept_rating,
-                    comments = r.comments,
-                    feedback_at = r.feedback_at,
-                    interview_id = r.interview_id,
-                    candidate_skill_id = r.candidate_skill_id,
+                    feedback_id = r.FeedbackId,
+                    rating = r.ConceptRating,
+                    comments = r.Comments,
+                    feedback_at = r.FeedbackAt,
+                    interview_id = r.InterviewId,
+                    candidate_skill_id = r.CandidateSkillId,
                 }).ToList(),
 
-                candidate_reviews = data.Candidate_Reviews.Select(r => new Candidate_ReviewDtos.Candidate_ReviewDto
+                candidate_reviews = data.CandidateReviews.Select(r => new Candidate_ReviewDtos.Candidate_ReviewDto
                 {
-                    review_id = r.review_id,
-                    comments = r.comments,
-                    reviewed_at = r.reviewed_at,
-                    candidate_id = r.candidate_id,
-                    job_id = r.job_id,
+                    review_id = r.ReviewId,
+                    comments = r.Comments,
+                    reviewed_at = r.ReviewedAt,
+                    candidate_id = r.CandidateId,
+                    job_id = r.JobId,
                 }).ToList(),
 
                 jobs_created = data.Jobs?.Select(r => new JobDtos.JobDto
                 {
-                    job_id = r.job_id,
-                    job_title = r.job_title,
-                    job_description = r.job_description,
-                    created_at = r.created_at,
-                    status_id = r.status_id,
-                    status = r.status == null ? null : new Jobs_StatusDtos.Jobs_StatusDto
+                    job_id = r.JobId,
+                    job_title = r.JobTitle,
+                    job_description = r.JobDescription,
+                    created_at = r.CreatedAt,
+                    status_id = r.StatusId,
+                    status = r.Status == null ? null : new Jobs_StatusDtos.Jobs_StatusDto
                     {
-                        status_id = r.status.status_id,
-                        status = r.status.status,
-                        reason = r.status.reason,
-                        changed_by = r.status.changed_by,
-                        changed_at = r.status.changed_at
+                        status_id = r.Status.StatusId,
+                        status = r.Status.Status,
+                        reason = r.Status.Reason,
+                        changed_by = r.Status.ChangedBy,
+                        changed_at = r.Status.ChangedAt
                     }
                 }).ToList() ?? new List<JobDtos.JobDto>(),
             };
@@ -157,13 +157,13 @@ namespace RecruitmentApi.Services
 
         public async Task<List<UserDtos.InterviewerInfo>> GetInterviewers()
         {
-            var data = await _context.Users.Where(r => r.roles.Any(r => r.role_name == "Interviewer" || r.role_name == "HR")).Select(r => new UserDtos.InterviewerInfo
+            var data = await _context.Users.Where(r => r.Roles.Any(r => r.RoleName == "Interviewer" || r.RoleName == "HR")).Select(r => new UserDtos.InterviewerInfo
             {
-                user_id = r.user_id,
-                name = r.name,
-                roles = r.roles.Select(s => new RoleDtos.RoleDto
+                user_id = r.UserId,
+                name = r.Name,
+                roles = r.Roles.Select(s => new RoleDtos.RoleDto
                 {
-                    role_name = s.role_name,
+                    role_name = s.RoleName,
                 }).ToList()
             }).ToListAsync();
             if (data == null)
@@ -177,16 +177,16 @@ namespace RecruitmentApi.Services
             if (id.IsNullOrEmpty())
                 throw new ArgumentException("Invalid user id");
 
-            var user = await _context.Users.FirstOrDefaultAsync(r => r.user_id == id);
+            var user = await _context.Users.FirstOrDefaultAsync(r => r.UserId == id);
 
             if (user == null)
                 throw new Exception("User not found");
 
             var response = new UserDtos.UserDto
             {
-                user_id = user.user_id,
-                name = user.name,
-                email = user.email
+                user_id = user.UserId,
+                name = user.Name,
+                email = user.Email
             };
 
             return response;
@@ -200,14 +200,14 @@ namespace RecruitmentApi.Services
             if (dto.password.IsNullOrEmpty())
                 throw new ArgumentException("Password field is empty");
 
-            var user = await _context.Users.FirstOrDefaultAsync(r => r.user_id == dto.user_id);
+            var user = await _context.Users.FirstOrDefaultAsync(r => r.UserId == dto.user_id);
 
             if (user == null)
                 throw new Exception("User not found");
 
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.password);
 
-            user.password_hash = hashedPassword;
+            user.PasswordHash = hashedPassword;
 
             await _context.SaveChangesAsync();
 
@@ -222,18 +222,18 @@ namespace RecruitmentApi.Services
             if (dto.name.IsNullOrEmpty() || dto.email.IsNullOrEmpty())
                 throw new ArgumentException("One or more fields are empty");
 
-            var checkmail = await _context.Users.FirstOrDefaultAsync(u => u.email == dto.email);
+            var checkmail = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.email);
 
             if (checkmail != null)
                 throw new Exception("Email already in use");
 
-            var user = await _context.Users.FirstOrDefaultAsync(r => r.user_id == dto.user_id);
+            var user = await _context.Users.FirstOrDefaultAsync(r => r.UserId == dto.user_id);
 
             if (user == null)
                 throw new Exception("User not found");
 
-            user.name = dto.name;
-            user.email = dto.email;
+            user.Name = dto.name;
+            user.Email = dto.email;
 
             await _context.SaveChangesAsync();
 
@@ -250,7 +250,7 @@ namespace RecruitmentApi.Services
         public async Task<User> CreateUserAsync(UserDtos.UserCreateDto dto)
         {
             // Check if user already exists
-            if (await _context.Users.AnyAsync(u => u.user_id == dto.user_id))
+            if (await _context.Users.AnyAsync(u => u.UserId == dto.user_id))
                 throw new Exception("User ID already exists");
 
             // Hash password (basic example, replace with real hasher)
@@ -258,11 +258,11 @@ namespace RecruitmentApi.Services
 
             var user = new User
             {
-                user_id = dto.user_id,
-                name = dto.name,
-                email = dto.email,
-                password_hash = hashedPassword,
-                created_at = DateTime.Now,
+                UserId = dto.user_id,
+                Name = dto.name,
+                Email = dto.email,
+                PasswordHash = hashedPassword,
+                CreatedAt = DateTime.Now,
             };
 
             // Attach existing roles by ID (ignore names)
@@ -271,7 +271,7 @@ namespace RecruitmentApi.Services
                 var role = await _context.Roles.FindAsync(roleDto.role_id);
                 if (role != null)
                 {
-                    user.roles.Add(role);
+                    user.Roles.Add(role);
                 }
             }
 
@@ -290,23 +290,23 @@ namespace RecruitmentApi.Services
         public async Task<User> UpdateUserAsync(UserDtos.UserUpdateDto dto)
         {
             var existingUser = await _context.Users
-                .Include(u => u.roles)
-                .FirstOrDefaultAsync(u => u.user_id == dto.user_id);
+                .Include(u => u.Roles)
+                .FirstOrDefaultAsync(u => u.UserId == dto.user_id);
 
             if (existingUser == null)
                 throw new Exception("User ID does not exist");
 
-            existingUser.name = dto.name;
-            existingUser.email = dto.email;
+            existingUser.Name = dto.name;
+            existingUser.Email = dto.email;
 
-            existingUser.roles.Clear();
+            existingUser.Roles.Clear();
 
             foreach (var roleDto in dto.roles)
             {
                 var role = await _context.Roles.FindAsync(roleDto.role_id);
                 if (role != null)
                 {
-                    existingUser.roles.Add(role);
+                    existingUser.Roles.Add(role);
                 }
             }
 
@@ -325,8 +325,8 @@ namespace RecruitmentApi.Services
             if (userId == null)
                 throw new Exception("User Id can not be null value");
             var user = await _context.Users
-                .Include(u => u.roles)
-                .FirstOrDefaultAsync(u => u.user_id == userId);
+                .Include(u => u.Roles)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null)
                 throw new Exception("User Does not exist");
             _context.Users.Remove(user);

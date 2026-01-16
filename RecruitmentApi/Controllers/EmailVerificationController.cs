@@ -1,10 +1,15 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Mail;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Humanizer;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using RecruitmentApi.Data;
+using RecruitmentApi.Models;
 using RecruitmentApi.Services;
 
 namespace RecruitmentApi.Controllers
@@ -13,70 +18,72 @@ namespace RecruitmentApi.Controllers
     [ApiController]
     public class EmailVerificationController : ControllerBase
     {
-        // Temporary in-memory store for OTPs (use Redis or DB in production)
         private static readonly ConcurrentDictionary<string, OtpEntry> _otpStore = new();
+        private static readonly ConcurrentDictionary<string, ResetPasswordStore> _passwordReset = new();
 
         private readonly CandidateService _candidateService;
-
-        private readonly SmtpClient _smtpClient;
-
+        private readonly EmailConfigurationModel _emailSettings;
         private readonly Random _random = new();
+        private readonly AppDbContext _context;
 
-        public EmailVerificationController(CandidateService candidateService)
+        public EmailVerificationController(CandidateService candidateService,AppDbContext context,IOptions<EmailConfigurationModel> emailOptions)
         {
-            // Configure SMTP client (example uses Gmail SMTP)
-            _smtpClient = new SmtpClient("smtp.gmail.com")
-            {
-                Port = 587,
-                Credentials = new NetworkCredential("sofiamarshal77@gmail.com", "fqsc rtvs tmoq svey"),
-                EnableSsl = true,
-            };
-
             _candidateService = candidateService;
+            _emailSettings = emailOptions.Value;
+            _context = context;
+        }
+        private static string HashToken(string token, string secretKey)
+        {
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secretKey));
+            byte[] hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(token));
+            return Convert.ToBase64String(hashBytes);
         }
 
         // Generate OTP
         [HttpPost("generate")]
         public async Task<IActionResult> GenerateOtp([FromBody] OtpRequest request)
         {
-            if (string.IsNullOrEmpty(request.Identifier))
-                return BadRequest("Identifier (email/phone) is required.");
+            if (string.IsNullOrWhiteSpace(request.Identifier))
+                return BadRequest("Email is required.");
 
-            // Generate random 6-digit OTP
+            if (await _candidateService.IsRegisteredAsync(request.Identifier))
+                return Conflict("Email is already in use.");
+
             string otp = _random.Next(100000, 999999).ToString();
 
-            // Store OTP with 5-minute expiry
             _otpStore[request.Identifier] = new OtpEntry
             {
                 Otp = otp,
                 Expiry = DateTime.UtcNow.AddMinutes(5)
             };
 
-            if (string.IsNullOrEmpty(request.Identifier))
-                return BadRequest("Recipient email is required.");
-
-            if(await _candidateService.IsRegisteredAsync(request.Identifier))
-                return StatusCode(500, "Email is already in use");
-
             try
             {
+                using var smtpClient = new SmtpClient(_emailSettings.SmtpHost)
+                {
+                    Port = _emailSettings.SmtpPort,
+                    Credentials = new NetworkCredential(
+                        _emailSettings.Username,
+                        _emailSettings.Password),
+                    EnableSsl = true
+                };
+
                 var mailMessage = new MailMessage
                 {
-                    From = new MailAddress("sofiamarshal77@gmail.com"),
+                    From = new MailAddress(_emailSettings.From),
                     Subject = "OTP for Roima Registration",
-                    Body = $"Yor OTP is '{otp}', Please do not share with anyone.",
-                    IsBodyHtml = true,
+                    Body = $"Your OTP is <b>{otp}</b>. Please do not share it with anyone.",
+                    IsBodyHtml = true
                 };
 
                 mailMessage.To.Add(request.Identifier);
 
-                await _smtpClient.SendMailAsync(mailMessage);
+                await smtpClient.SendMailAsync(mailMessage);
 
-                return Ok(new { message = "OTP generated and sent successfully.", success = true });
+                return Ok(new { success = true, message = "OTP generated and sent successfully." });
             }
             catch (SmtpException ex)
             {
-                // Log exception (ex)
                 return StatusCode(500, "Error sending email: " + ex.Message);
             }
         }
@@ -97,14 +104,181 @@ namespace RecruitmentApi.Controllers
             if (entry.Otp != request.Otp)
                 return BadRequest("Invalid OTP.");
 
-            // OTP is valid — remove it to prevent reuse
             _otpStore.TryRemove(request.Identifier, out _);
 
-            return Ok(new { message = "OTP verified successfully!", verified = true });
+            return Ok(new { verified = true, message = "OTP verified successfully!" });
+        }
+
+
+        [HttpPost("generate-fpassword-otp")]
+        public async Task<IActionResult> GenerateForgotpasswordOtp([FromBody] OtpRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Identifier))
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Email is required.",
+                    error = "Email is required."
+                });
+
+            var check = await _context.Candidates.AnyAsync(i => i.Email == request.Identifier) || await _context.Users.AnyAsync(i => i.Email == request.Identifier);
+
+            if (!check)
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "User does not exist",
+                    error = "User does not exist"
+                });
+
+            string otp = _random.Next(100000, 999999).ToString();
+
+            _otpStore[request.Identifier] = new OtpEntry
+            {
+                Otp = otp,
+                Expiry = DateTime.UtcNow.AddMinutes(5)
+            };
+
+            try
+            {
+                using var smtpClient = new SmtpClient(_emailSettings.SmtpHost)
+                {
+                    Port = _emailSettings.SmtpPort,
+                    Credentials = new NetworkCredential(
+                        _emailSettings.Username,
+                        _emailSettings.Password),
+                    EnableSsl = true
+                };
+
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress(_emailSettings.From),
+                    Subject = "OTP for Roima Forgot Password",
+                    Body = $"Your OTP is <b>{otp}</b>. Please do not share it with anyone.",
+                    IsBodyHtml = true
+                };
+
+                mailMessage.To.Add(request.Identifier);
+
+                await smtpClient.SendMailAsync(mailMessage);
+
+                return Ok(new { success = true, message = "OTP generated and sent successfully." });
+            }
+            catch (SmtpException ex)
+            {
+                return StatusCode(500, "Error sending email: " + ex.Message);
+            }
+        }
+
+        [HttpPost("verify-fpassword-otp")]
+        public IActionResult VerifyForgotpasswordOtp([FromBody] OtpVerifyRequest request)
+        {
+            if (!_otpStore.TryGetValue(request.Identifier, out var entry))
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "OTP not found or expired.",
+                    error = "OTP not found or expired."
+                });
+
+            if (DateTime.UtcNow > entry.Expiry)
+            {
+                _otpStore.TryRemove(request.Identifier, out _);
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "OTP expired.",
+                    error = "OTP expired."
+                });
+            }
+
+            if (entry.Otp != request.Otp)
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Invalid OTP.",
+                    error = "Invalid OTP."
+                });
+
+            _otpStore.TryRemove(request.Identifier, out _);
+
+            string rawToken = _random.Next(100000, 999999).ToString();
+            string hashedToken = HashToken(rawToken,"ThisIsMySecerateKey!!!");
+
+            _passwordReset[request.Identifier] = new ResetPasswordStore
+            {
+                ResetToken = hashedToken,
+                Expiry = DateTime.UtcNow.AddMinutes(5)
+            };
+
+            return Ok(new
+            {
+                success = true,
+                message = "Otp verified successfully",
+                data = new
+                {
+                    verified = true,
+                    resetToken = rawToken
+                }
+            });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            if (!_passwordReset.TryGetValue(request.Identifier, out var entry))
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Reset Token not found or expired.",
+                    error = "Reset Token not found or expired."
+                });
+
+            if (DateTime.UtcNow > entry.Expiry)
+            {
+                _otpStore.TryRemove(request.Identifier, out _);
+                return BadRequest(
+                    new
+                    {
+                        success = false,
+                        message = "Session Token expired.",
+                        error = "Session Token expired."
+                    });
+            }
+
+            if (HashToken(request.ResetToken, "ThisIsMySecerateKey!!!") != entry.ResetToken)
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Invalid Session.",
+                    error = "Invalid Session."
+                });
+
+            _passwordReset.TryRemove(request.Identifier, out _);
+
+            var user = await _context.Users.FirstOrDefaultAsync(i => i.Email == request.Identifier);
+            if (user != null)
+            {
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            }
+
+            var candidate = await _context.Candidates.FirstOrDefaultAsync(i => i.Email == request.Identifier);
+            if (candidate != null)
+            {
+                candidate.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            }
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = "Password Reset",
+                data = true
+            });
         }
     }
 
-    // Request models
+    // DTOs
     public class OtpRequest
     {
         public string Identifier { get; set; } = null!;
@@ -116,11 +290,22 @@ namespace RecruitmentApi.Controllers
         public string Otp { get; set; } = null!;
     }
 
-    // OTP storage model
+    public class ResetPasswordStore
+    {
+        public string ResetToken { get; set; } = null!;
+        public DateTime Expiry { get; set; }
+    }
+
+    public class ResetPasswordRequest
+    {
+        public string Identifier { get; set; } = null!;
+        public string ResetToken { get; set; } = null!;
+        public string NewPassword { get; set; } = null!;
+    }
+
     public class OtpEntry
     {
         public string Otp { get; set; } = null!;
         public DateTime Expiry { get; set; }
-
     }
 }

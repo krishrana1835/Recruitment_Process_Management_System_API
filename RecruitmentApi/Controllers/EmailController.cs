@@ -25,7 +25,7 @@ namespace RecruitmentApi.Controllers
             _smtpClient = new SmtpClient("smtp.gmail.com")
             {
                 Port = 587,
-                Credentials = new NetworkCredential("sofiamarshal77@gmail.com", "ghpz oedu mwfi oovq"),
+                Credentials = new NetworkCredential("sofiamarshal77@gmail.com", "hxlu cdne fdzn invg"),
                 EnableSsl = true,
             };
 
@@ -41,7 +41,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("send")]
-        [Authorize(Roles = "Admin, Candidate, Reviewer")]
+        [Authorize(Roles = "Admin, Candidate, Reviewer, HR")]
         public async Task<IActionResult> SendEmail([FromBody] EmailRequest request)
         {
             if (string.IsNullOrEmpty(request.ToEmail))
@@ -88,20 +88,20 @@ namespace RecruitmentApi.Controllers
             {
                 foreach (var id in request.ToUserIds)
                 {
-                    var mail = await _db.Users.FirstOrDefaultAsync(i => i.user_id == id) ?? throw new NullReferenceException("User does not exist");
+                    var mail = await _db.Users.FirstOrDefaultAsync(i => i.UserId == id) ?? throw new NullReferenceException("User does not exist");
                     email.Recipients.Add(new EmailRecipient
                     {
-                        email = mail.email,
+                        Email = mail.Email,
                         Type = RecipientType.To
                     });
                 }
 
                 foreach (var id in request.CcUserIds)
                 {
-                    var mail = await _db.Users.FirstOrDefaultAsync(i => i.user_id == id) ?? throw new NullReferenceException("User does not exist");
+                    var mail = await _db.Users.FirstOrDefaultAsync(i => i.UserId == id) ?? throw new NullReferenceException("User does not exist");
                     email.Recipients.Add(new EmailRecipient
                     {
-                        email = mail.email,
+                        Email = mail.Email,
                         Type = RecipientType.Cc
                     });
                 }
@@ -159,9 +159,9 @@ namespace RecruitmentApi.Controllers
                 if (t1 || request.Cc.Contains("All Interviewers & HR"))
                 {
                     var emails = await _db.Interviews
-                        .Where(j => j.job_id == request.JobId)
-                        .SelectMany(u => u.users)
-                        .Select(e => e.email)
+                        .Where(j => j.JobId == request.JobId)
+                        .SelectMany(u => u.Users)
+                        .Select(e => e.Email)
                         .Distinct()
                         .ToListAsync();
 
@@ -169,7 +169,7 @@ namespace RecruitmentApi.Controllers
                     {
                         email.Recipients.Add(new EmailRecipient
                         {
-                            email = id,
+                            Email = id,
                             Type = t1 ? RecipientType.To : RecipientType.Cc
                         });
                     }
@@ -179,8 +179,8 @@ namespace RecruitmentApi.Controllers
                 if (t2 || request.Cc.Contains("All Candidates"))
                 {
                     var emails = await _db.Interviews
-                        .Where(i => i.job_id == request.JobId && i.round_number == 1)
-                        .Select(c => c.candidate.email)
+                        .Where(i => i.JobId == request.JobId && i.RoundNumber == 1)
+                        .Select(c => c.Candidate.Email)
                         .Distinct()
                         .ToListAsync();
 
@@ -188,7 +188,7 @@ namespace RecruitmentApi.Controllers
                     {
                         email.Recipients.Add(new EmailRecipient
                         {
-                            email = id,
+                            Email = id,
                             Type = t2 ? RecipientType.To : RecipientType.Cc
                         });
                     }
@@ -197,14 +197,14 @@ namespace RecruitmentApi.Controllers
                 if ( t3 || request.Cc.Contains("Selected Candidates"))
                 {
                     var max = await _db.Interviews
-                        .Where(j => j.job_id == request.JobId)
-                        .Select(r => r.round_number)
+                        .Where(j => j.JobId == request.JobId)
+                        .Select(r => r.RoundNumber)
                         .Distinct()
                         .OrderDescending()
                         .FirstOrDefaultAsync();
                     var emails = await _db.Interviews
-                        .Where(i => i.job_id == request.JobId && i.round_number == max && i.status == "Selected")
-                        .Select(c => c.candidate.email)
+                        .Where(i => i.JobId == request.JobId && i.RoundNumber == max && i.Status == "Selected")
+                        .Select(c => c.Candidate.Email)
                         .Distinct()
                         .ToListAsync();
 
@@ -212,7 +212,7 @@ namespace RecruitmentApi.Controllers
                     {
                         email.Recipients.Add(new EmailRecipient
                         {
-                            email = id,
+                            Email = id,
                             Type = t3 ? RecipientType.To : RecipientType.Cc
                         });
                     }
@@ -252,9 +252,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("GetRecpients/{id}")]
+        [HttpGet("GetRecpients")]
         [Authorize(Roles = "Admin, HR")]
-        public async Task<IActionResult> GetAllRecipients(int id)
+        public async Task<IActionResult> GetAllRecipients([FromQuery]int id)
         {
             try
             {
@@ -344,9 +344,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpDelete("DeleteEmail/{Id}")]
+        [HttpDelete("DeleteEmail")]
         [Authorize(Roles = "Admin, HR")]
-        public async Task<IActionResult> DeleteEmail(int Id)
+        public async Task<IActionResult> DeleteEmail([FromQuery]int Id)
         {
             try
             {

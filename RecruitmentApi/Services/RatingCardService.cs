@@ -17,69 +17,69 @@ namespace RecruitmentApi.Services
 
         public async Task<List<RatingCardDtos.InterviewRoundRatingDto>> GetRatingByRoundAsync(RatingCardDtos.RoundCardReq req)
         {
-            if (!await _context.Jobs.AnyAsync(i => i.job_id == req.job_id))
+            if (!await _context.Jobs.AnyAsync(i => i.JobId == req.job_id))
                 throw new Exception("Job does not exist");
 
-            if (!await _context.Candidates.AnyAsync(i => i.candidate_id == req.candidate_id))
+            if (!await _context.Candidates.AnyAsync(i => i.CandidateId == req.candidate_id))
                 throw new Exception("Candidate does not exist");
 
             var interviews = await _context.Interviews
                 .AsNoTracking()
                 .Where(i =>
-                    i.job_id == req.job_id &&
-                    i.candidate_id == req.candidate_id &&
-                    i.round_number == req.round_number)
+                    i.JobId == req.job_id &&
+                    i.CandidateId == req.candidate_id &&
+                    i.RoundNumber == req.round_number)
                 .Select(i => new RatingCardDtos.InterviewRoundRatingDto
                 {
                     Candidate = new CandidateDtos.CandidateDto
                     {
-                        candidate_id = i.candidate_id,
-                        full_name = i.candidate.full_name,
-                        email = i.candidate.email
+                        candidate_id = i.CandidateId,
+                        full_name = i.Candidate.FullName,
+                        email = i.Candidate.Email
                     },
 
                     InterviewType = new Interview_TypeDtos.InterviewType
                     {
-                        interview_type_id = i.interview_type_id,
-                        interview_round_name = i.interview_type.interview_round_name,
-                        process_descreption = i.interview_type.process_descreption
+                        interview_type_id = i.InterviewTypeId,
+                        interview_round_name = i.InterviewType.InterviewRoundName,
+                        process_descreption = i.InterviewType.ProcessDescreption
                     },
 
-                    Users = i.users.Select(u => new UserDtos.UserDto
+                    Users = i.Users.Select(u => new UserDtos.UserDto
                     {
-                        user_id = u.user_id,
-                        name = u.name,
-                        email = u.email
+                        user_id = u.UserId,
+                        name = u.Name,
+                        email = u.Email
                     }).ToList(),
 
-                    InterviewFeedbacks = i.Interview_Feedbacks.Select(f => new Interview_FeedBackDtos.InterveiwFeedbackCard
+                    InterviewFeedbacks = i.InterviewFeedbacks.Select(f => new Interview_FeedBackDtos.InterveiwFeedbackCard
                     {
-                        concept_rating = f.concept_rating,
-                        technical_rating = f.technical_rating,
-                        candidate_skill_id = f.candidate_skill_id,
-                        user_id = f.user_id,
+                        concept_rating = f.ConceptRating,
+                        technical_rating = f.TechnicalRating,
+                        candidate_skill_id = f.CandidateSkillId,
+                        user_id = f.UserId,
                         Candidaete_Skill = new Candidate_SkillDtos.Candidate_SkillDto
                         {
-                            candidate_id = f.candidate_skill.candidate_id,
-                            years_experience = f.candidate_skill.years_experience,
-                            skill_id = f.candidate_skill.skill_id,
-                            candidate_skill_id = f.candidate_skill_id,
+                            candidate_id = f.CandidateSkill.CandidateId,
+                            years_experience = f.CandidateSkill.YearsExperience,
+                            skill_id = f.CandidateSkill.SkillId,
+                            candidate_skill_id = f.CandidateSkillId,
                             skill = new SkillDtos.SkillDto
                             {
-                                skill_id = f.candidate_skill.skill.SkillId,
-                                skill_name = f.candidate_skill.skill.SkillName
+                                skill_id = f.CandidateSkill.Skill.SkillId,
+                                skill_name = f.CandidateSkill.Skill.SkillName
                             }
                         }
                     }).ToList(),
 
-                    HrReviews = i.HR_Reviews.Select(h => new HrReviewDtos.Card
+                    HrReviews = i.HrReviews.Select(h => new HrReviewDtos.Card
                     {
-                        user_id = h.user_id,
-                        adaptability_rating = h.adaptability_rating,
-                        teamwork_rating = h.teamwork_rating,
-                        communication_rating = h.communication_rating,
-                        leadership_rating = h.leadership_rating,
-                        overall_rating = h.overall_rating
+                        user_id = h.UserId,
+                        adaptability_rating = h.AdaptabilityRating,
+                        teamwork_rating = h.TeamworkRating,
+                        communication_rating = h.CommunicationRating,
+                        leadership_rating = h.LeadershipRating,
+                        overall_rating = h.OverallRating
                     }).ToList()
                 })
                 .ToListAsync();
@@ -92,17 +92,17 @@ namespace RecruitmentApi.Services
             if (!await _context.Jobs.AnyAsync())
                 throw new NullReferenceException("Job does not exist");
 
-            var interview = await _context.Interviews.Where(i => i.job_id == job_id && i.round_number == round_number)
+            var interview = await _context.Interviews.Where(i => i.JobId == job_id && i.RoundNumber == round_number)
                 .Select(s => new RatingCardDtos.ListCanndidateScores
                 {
-                    interview_id = s.interview_id,
-                    score = s.score,
-                    status = s.status,
+                    interview_id = s.InterviewId,
+                    score = s.Score,
+                    status = s.Status,
                     Candidate = new CandidateDtos.CandidateDto
                     {
-                        candidate_id = s.candidate_id,
-                        full_name = s.candidate.full_name,
-                        email = s.candidate.email,
+                        candidate_id = s.CandidateId,
+                        full_name = s.Candidate.FullName,
+                        email = s.Candidate.Email,
                     }
                 }).ToListAsync();
 
@@ -111,69 +111,69 @@ namespace RecruitmentApi.Services
 
         public async Task<List<RatingCardDtos.InterviewRoundRatingDto>> GetRatingsAsync(int job_id, int round_number, string candidate_id)
         {
-            if (!await _context.Jobs.AnyAsync(i => i.job_id == job_id))
+            if (!await _context.Jobs.AnyAsync(i => i.JobId == job_id))
                 throw new Exception("Job does not exist");
 
-            if (!await _context.Candidates.AnyAsync(i => i.candidate_id == candidate_id))
+            if (!await _context.Candidates.AnyAsync(i => i.CandidateId == candidate_id))
                 throw new Exception("Candidate does not exist");
 
             var interviews = await _context.Interviews
                 .AsNoTracking()
                 .Where(i =>
-                    i.job_id == job_id &&
-                    i.candidate_id == candidate_id &&
-                    i.round_number <= round_number)
+                    i.JobId == job_id &&
+                    i.CandidateId == candidate_id &&
+                    i.RoundNumber <= round_number)
                 .Select(i => new RatingCardDtos.InterviewRoundRatingDto
                 {
                     Candidate = new CandidateDtos.CandidateDto
                     {
-                        candidate_id = i.candidate_id,
-                        full_name = i.candidate.full_name,
-                        email = i.candidate.email
+                        candidate_id = i.CandidateId,
+                        full_name = i.Candidate.FullName,
+                        email = i.Candidate.Email
                     },
 
                     InterviewType = new Interview_TypeDtos.InterviewType
                     {
-                        interview_type_id = i.interview_type_id,
-                        interview_round_name = i.interview_type.interview_round_name,
-                        process_descreption = i.interview_type.process_descreption
+                        interview_type_id = i.InterviewTypeId,
+                        interview_round_name = i.InterviewType.InterviewRoundName,
+                        process_descreption = i.InterviewType.ProcessDescreption
                     },
 
-                    Users = i.users.Select(u => new UserDtos.UserDto
+                    Users = i.Users.Select(u => new UserDtos.UserDto
                     {
-                        user_id = u.user_id,
-                        name = u.name,
-                        email = u.email
+                        user_id = u.UserId,
+                        name = u.Name,
+                        email = u.Email
                     }).ToList(),
 
-                    InterviewFeedbacks = i.Interview_Feedbacks.Select(f => new Interview_FeedBackDtos.InterveiwFeedbackCard
+                    InterviewFeedbacks = i.InterviewFeedbacks.Select(f => new Interview_FeedBackDtos.InterveiwFeedbackCard
                     {
-                        concept_rating = f.concept_rating,
-                        technical_rating = f.technical_rating,
-                        candidate_skill_id = f.candidate_skill_id,
-                        user_id = f.user_id,
+                        concept_rating = f.ConceptRating,
+                        technical_rating = f.TechnicalRating,
+                        candidate_skill_id = f.CandidateSkillId,
+                        user_id = f.UserId,
                         Candidaete_Skill = new Candidate_SkillDtos.Candidate_SkillDto
                         {
-                            candidate_id = f.candidate_skill.candidate_id,
-                            years_experience = f.candidate_skill.years_experience,
-                            skill_id = f.candidate_skill.skill_id,
-                            candidate_skill_id = f.candidate_skill_id,
+                            candidate_id = f.CandidateSkill.CandidateId,
+                            years_experience = f.CandidateSkill.YearsExperience,
+                            skill_id = f.CandidateSkill.SkillId,
+                            candidate_skill_id = f.CandidateSkillId,
                             skill = new SkillDtos.SkillDto
                             {
-                                skill_id = f.candidate_skill.skill.SkillId,
-                                skill_name = f.candidate_skill.skill.SkillName
+                                skill_id = f.CandidateSkill.Skill.SkillId,
+                                skill_name = f.CandidateSkill.Skill.SkillName
                             }
                         }
                     }).ToList(),
 
-                    HrReviews = i.HR_Reviews.Select(h => new HrReviewDtos.Card
+                    HrReviews = i.HrReviews.Select(h => new HrReviewDtos.Card
                     {
-                        user_id = h.user_id,
-                        adaptability_rating = h.adaptability_rating,
-                        teamwork_rating = h.teamwork_rating,
-                        communication_rating = h.communication_rating,
-                        leadership_rating = h.leadership_rating,
-                        overall_rating = h.overall_rating
+                        user_id = h.UserId,
+                        adaptability_rating = h.AdaptabilityRating,
+                        teamwork_rating = h.TeamworkRating,
+                        communication_rating = h.CommunicationRating,
+                        leadership_rating = h.LeadershipRating,
+                        overall_rating = h.OverallRating
                     }).ToList()
                 })
                 .ToListAsync();

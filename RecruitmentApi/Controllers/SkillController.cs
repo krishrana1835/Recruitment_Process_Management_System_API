@@ -32,9 +32,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("AddSkill/{skill}")]
+        [HttpGet("AddSkill")]
         [Authorize(Roles = "Admin, Recruiter, Interviewer")]
-        public async Task<IActionResult> addSkills(string skill)
+        public async Task<IActionResult> addSkills([FromQuery] string skill)
         {
             try
             {
@@ -75,7 +75,7 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpPost("UpdateSkill")]
+        [HttpPut("UpdateSkill")]
         [Authorize(Roles = "Admin, Recruiter, Interviewer")]
         public async Task<IActionResult> updateSkill(SkillDtos.SkillDto req)
         {
@@ -110,9 +110,9 @@ namespace RecruitmentApi.Controllers
         }
 
 
-        [HttpDelete("DeleteSkill/{skill_id}")]
+        [HttpDelete("DeleteSkill")]
         [Authorize(Roles = "Admin, Recruiter, Interviewer")]
-        public async Task<IActionResult> updateSkill(int skill_id)
+        public async Task<IActionResult> updateSkill([FromQuery] int skill_id)
         {
             try
             {

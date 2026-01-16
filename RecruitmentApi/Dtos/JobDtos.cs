@@ -127,7 +127,7 @@ namespace RecruitmentApi.Dtos
         {
             public int job_id { get; set; }
             public string job_title { get; set; } = null!;
-            public string sheduled { get; set; } = null!;
+            public string scheduled { get; set; } = null!;
         }
 
         public class JobTitle

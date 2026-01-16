@@ -8,7 +8,9 @@ namespace RecruitmentApi.Dtos
         {
             public int interview_id { get; set; }
             public int job_id { get; set; }
-
+            public int round_number { get; set; }
+            public string round_title { get; set; } = null!;
+            public string status { get; set; } = null!;
             public JobDtos.JobDto_Candidate job { get; set; }
         }
 
@@ -53,6 +55,7 @@ namespace RecruitmentApi.Dtos
 
             public int round_number { get; set; }
 
+            public string AccessTo { get; set; } = null!;
             public string location_or_link { get; set; } = null!;
 
             public string candidate_id { get; set; } = null!;
@@ -118,16 +121,11 @@ namespace RecruitmentApi.Dtos
             public List<string> users { get; set; }
         }
 
-        public class CandidateInterviewReq
-        {
-            public int job_id { get; set; }
-            public string candidate_id { get; set; } = null!;
-        }
-
         public class InterviewStatusUpdateReq
         {
             public int interview_id { get; set; }
             public string status { get; set; } = null!;
+            public string user_id { get; set;} = null!;
         }
 
         public class InterviewSkillsRes

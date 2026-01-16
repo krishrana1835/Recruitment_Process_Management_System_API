@@ -88,16 +88,16 @@ namespace RecruitmentApi.Services
             {
                 case "Candidate":
                     var candidate = await _context.Candidates
-                        .FirstOrDefaultAsync(c => c.email == email);
+                        .FirstOrDefaultAsync(c => c.Email == email);
 
                     if (candidate == null)
                         return null;
 
                     return new LoginData
                     {
-                        Id = candidate.candidate_id,
-                        Password = candidate.password,
-                        Roles = new List<Role> { new Role { role_name = "Candidate" } } // Assuming Role class
+                        Id = candidate.CandidateId,
+                        Password = candidate.Password,
+                        Roles = new List<Role> { new Role { RoleName = "Candidate" } } // Assuming Role class
                     };
 
                 case "Admin":
@@ -107,17 +107,17 @@ namespace RecruitmentApi.Services
                 case "Reviewer":
                 case "Viewer":
                     var user = await _context.Users
-                        .Include(u => u.roles)
-                        .FirstOrDefaultAsync(u => u.email == email);
+                        .Include(u => u.Roles)
+                        .FirstOrDefaultAsync(u => u.Email == email);
 
                     if (user == null)
                         return null;
 
                     return new LoginData
                     {
-                        Id = user.user_id,
-                        Password = user.password_hash,
-                        Roles = user.roles.ToList()
+                        Id = user.UserId,
+                        Password = user.PasswordHash,
+                        Roles = user.Roles.ToList()
                     };
 
                 default:

@@ -52,9 +52,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("GetCandidateAllScores/{job_id}/{round_number}/{candidate_id}")]
+        [HttpGet("GetCandidateAllScores")]
         [Authorize(Roles = "Admin, Interviewer, HR, Viewer")]
-        public async Task<IActionResult> getCandidateScores(int job_id, int round_number, string candidate_id)
+        public async Task<IActionResult> getCandidateScores([FromQuery] int job_id, [FromQuery]int round_number, [FromQuery] string candidate_id)
         {
             try
             {
@@ -86,9 +86,9 @@ namespace RecruitmentApi.Controllers
             }
         }
 
-        [HttpGet("GetCandidateWithSocre/{job_id}/{round_number}")]
+        [HttpGet("GetCandidateWithSocre")]
         [Authorize(Roles = "Admin, Interviewer, HR, Viewer")]
-        public async Task<IActionResult> getCandidatesWithScore(int job_id, int round_number)
+        public async Task<IActionResult> getCandidatesWithScore([FromQuery] int job_id,[FromQuery] int round_number)
         {
             try
             {

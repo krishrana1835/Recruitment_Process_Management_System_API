@@ -21,53 +21,61 @@ namespace RecruitmentApi.Services
             _context = context;
         }
 
-        public class ScheduleInterviewRequestDto
+        public enum Access
         {
-            public int job_id { get; set; }
-            public int round_number { get; set; }
-            public DateTime scheduled_start_time { get; set; }
-            public int duration_per_interview { get; set; }
-
-            public List<List<string>> interviewers { get; set; } = new();
-
-            public List<string>? panel_links { get; set; } = new();
-
-            public string scheduled_by { get; set; } = string.Empty;
-
-            public string? location { get; set; }
-
-            public int interview_type_id { get; set; }
-            public int result_of { get; set; }
+            Interviewer,
+            HR
         }
+
+            public class ScheduleInterviewRequestDto
+            {
+                public int job_id { get; set; }
+                public int round_number { get; set; }
+
+                public Access accessTo { get; set; }
+                public DateTime scheduled_start_time { get; set; }
+                public int duration_per_interview { get; set; }
+
+                public List<List<string>> interviewers { get; set; } = new();
+
+                public List<string>? panel_links { get; set; } = new();
+
+                public string scheduled_by { get; set; } = string.Empty;
+
+                public string? location { get; set; }
+
+                public int interview_type_id { get; set; }
+                public int result_of { get; set; }
+            }
 
         public async Task<List<string>> GetShortlistedCandidates(int job_id)
         {
             if (job_id <= 0)
                 throw new ArgumentException("Invalid Job Id");
 
-            var jobExists = await _context.Jobs.AnyAsync(r => r.job_id == job_id);
+            var jobExists = await _context.Jobs.AnyAsync(r => r.JobId == job_id);
             if (!jobExists)
                 throw new Exception("Job not found");
 
             var latestStatus = _context.Candidate_Status_Histories
-                .Where(r => r.job_id == job_id)
-                .GroupBy(r => new { r.candidate_id, r.job_id })
+                .Where(r => r.JobId == job_id)
+                .GroupBy(r => new { r.CandidateId, r.JobId })
                 .Select(g => new
                 {
-                    g.Key.candidate_id,
-                    g.Key.job_id,
-                    LatestChangedAt = g.Max(r => r.changed_at)
+                    g.Key.CandidateId,
+                    g.Key.JobId,
+                    LatestChangedAt = g.Max(r => r.ChangedAt)
                 });
 
             var shortlisted = await _context.Candidate_Status_Histories
                 .Join(
                     latestStatus,
-                    history => new { history.candidate_id, history.job_id, history.changed_at },
-                    latest => new { latest.candidate_id, latest.job_id, changed_at = latest.LatestChangedAt },
+                    history => new { history.CandidateId, history.JobId, history.ChangedAt },
+                    latest => new { latest.CandidateId, latest.JobId, ChangedAt = latest.LatestChangedAt },
                     (history, latest) => history
                 )
-                .Where(r => r.status == "Shortlisted")
-                .Select(r => r.candidate_id)
+                .Where(r => r.Status == "Shortlisted")
+                .Select(r => r.CandidateId)
                 .ToListAsync();
 
             if (!shortlisted.Any())
@@ -78,21 +86,21 @@ namespace RecruitmentApi.Services
 
         public async Task<List<CandidateDtos.UpdateCandidateDto>> GetAllShortlistedCandidates(int job_id)
         {
-            if (!await _context.Jobs.AnyAsync(j => j.job_id == job_id))
+            if (!await _context.Jobs.AnyAsync(j => j.JobId == job_id))
                 throw new NullReferenceException("Job does not exist");
             var candidates = await GetShortlistedCandidates(job_id);
 
             List<CandidateDtos.UpdateCandidateDto> clist = [];
             foreach(var c in candidates)
             {
-                var candidate = await _context.Candidates.FirstOrDefaultAsync(i => i.candidate_id == c) ?? throw new NullReferenceException("Candidate does not exist");
+                var candidate = await _context.Candidates.FirstOrDefaultAsync(i => i.CandidateId == c) ?? throw new NullReferenceException("Candidate does not exist");
                 clist.Add(new CandidateDtos.UpdateCandidateDto
                 {
-                    candidate_id = candidate.candidate_id,
-                    full_name = candidate.full_name,
-                    email = candidate.email,
-                    phone = candidate.phone,
-                    resume_path = candidate.resume_path,
+                    candidate_id = candidate.CandidateId,
+                    full_name = candidate.FullName,
+                    email = candidate.Email,
+                    phone = candidate.Phone,
+                    resume_path = candidate.ResumePath,
                 });
             }
 
@@ -101,15 +109,18 @@ namespace RecruitmentApi.Services
 
         public async Task<Boolean> ScheduleInterviews(ScheduleInterviewRequestDto request)
         {
-            var job = await _context.Jobs.FirstOrDefaultAsync(j => j.job_id == request.job_id) ?? throw new NullReferenceException("Job Does not exist");
+            var job = await _context.Jobs.FirstOrDefaultAsync(j => j.JobId == request.job_id) ?? throw new NullReferenceException("Job Does not exist");
 
-            var interview = await _context.Interviews.AnyAsync(i => i.job_id == request.job_id && i.round_number == request.round_number);
-            if (interview)
-                throw new Exception("Interview Alerady Exist");
+            //var interview = await _context.Interviews.AnyAsync(i => i.JobId == request.job_id && i.RoundNumber == request.round_number);
+            //if (interview)
+            //    throw new Exception("Interview Alerady Exist");
 
             var interviewers_sorted = request.interviewers
                 .OrderBy(panel => panel.Last().Equals("Offline", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
                 .ToList();
+
+            if (request.accessTo != Access.Interviewer && request.accessTo != Access.HR)
+                throw new InvalidDataException("Invalid AccessTo data");
 
             List<string> candidates = [];
             if(request.result_of == 0)
@@ -119,7 +130,7 @@ namespace RecruitmentApi.Services
             }
             else
             {
-                candidates = await _context.Interviews.Where(i => i.job_id == request.job_id && i.round_number == request.result_of && i.status == "Selected").Select(u => u.candidate_id).ToListAsync();
+                candidates = await _context.Interviews.Where(i => i.JobId == request.job_id && i.RoundNumber == request.result_of && i.Status == "Selected").Select(u => u.CandidateId).ToListAsync();
             }
 
             Console.WriteLine($"Candidates found: {string.Join(",", candidates)}");
@@ -162,51 +173,53 @@ namespace RecruitmentApi.Services
                         locationOrLink = request.panel_links[panel_id];
                     }
 
-                    var existing = await _context.Interviews.Include(i => i.users).FirstOrDefaultAsync(i =>
-                        i.candidate_id == candidate_id &&
-                        i.job_id == request.job_id &&
-                        i.round_number == request.round_number);
+                    var existing = await _context.Interviews.Include(i => i.Users).FirstOrDefaultAsync(i =>
+                        i.CandidateId == candidate_id &&
+                        i.JobId == request.job_id &&
+                        i.RoundNumber == request.round_number);
 
                     if (existing != null)
                     {
-                        existing.start_time = start_time;
-                        existing.end_time = end_time;
-                        existing.mode = mode;
-                        existing.location_or_link = locationOrLink;
-                        existing.scheduled_by = request.scheduled_by;
-                        existing.interview_type_id = request.interview_type_id;
-                        existing.round_number = request.round_number;
-                        existing.job_id = request.job_id;
-                        existing.users.Clear();
-                        existing.status = "Rescheduled";
+                        existing.StartTime = start_time;
+                        existing.EndTime = end_time;
+                        existing.Mode = mode;
+                        existing.LocationOrLink = locationOrLink;
+                        existing.ScheduledBy = request.scheduled_by;
+                        existing.InterviewTypeId = request.interview_type_id;
+                        existing.RoundNumber = request.round_number;
+                        existing.AllowFeedback = request.accessTo.ToString();
+                        existing.JobId = request.job_id;
+                        existing.Users.Clear();
+                        existing.Status = "Rescheduled";
                         var userIds = panel_members.ToList();
                         var users = await _context.Users
-                                                 .Where(u => userIds.Contains(u.user_id))
+                                                 .Where(u => userIds.Contains(u.UserId))
                                                  .ToListAsync();
                         foreach(var user in users)
                         {
-                            existing.users.Add(user);
+                            existing.Users.Add(user);
                         }
                     }
                     else
                     {
                         var userIds = panel_members.ToList();
                         var users = await _context.Users
-                                                 .Where(u => userIds.Contains(u.user_id))
+                                                 .Where(u => userIds.Contains(u.UserId))
                                                  .ToListAsync();
                         var new_interview = new Interview
                         {
-                            start_time = start_time,
-                            end_time = end_time,
-                            status = "Scheduled",
-                            round_number = request.round_number,
-                            location_or_link = locationOrLink,
-                            candidate_id = candidate_id,
-                            job_id = request.job_id,
-                            scheduled_by = request.scheduled_by,
-                            interview_type_id = request.interview_type_id,
-                            mode = mode,
-                            users = users,
+                            StartTime = start_time,
+                            EndTime = end_time,
+                            Status = "Scheduled",
+                            AllowFeedback = request.accessTo.ToString(),
+                            RoundNumber = request.round_number,
+                            LocationOrLink = locationOrLink,
+                            CandidateId = candidate_id,
+                            JobId = request.job_id,
+                            ScheduledBy = request.scheduled_by,
+                            InterviewTypeId = request.interview_type_id,
+                            Mode = mode,
+                            Users = users,
                         };
 
                         _context.Interviews.Add(new_interview);
@@ -216,7 +229,7 @@ namespace RecruitmentApi.Services
                 }
             }
 
-            job.scheduled = "Scheduled";
+            job.Scheduled = "Scheduled";
 
             await _context.SaveChangesAsync();
             return true;
@@ -224,25 +237,25 @@ namespace RecruitmentApi.Services
 
         public async Task<InterviewDtos.ListOfRoundsRes> FetchInterviewRounds(int job_id)
         {
-            var job = await _context.Jobs.AnyAsync(j => j.job_id == job_id);
+            var job = await _context.Jobs.AnyAsync(j => j.JobId == job_id);
             if(!job)
                 throw new NullReferenceException("Job does not exist");
 
             var data = await _context.Interviews
-                    .Where(i => i.job_id == job_id)
+                    .Where(i => i.JobId == job_id)
                     .GroupBy(i => new
                     {
-                        i.round_number,
-                        i.interview_type.interview_round_name,
-                        i.interview_type.process_descreption
+                        i.RoundNumber,
+                        i.InterviewType.InterviewRoundName,
+                        i.InterviewType.ProcessDescreption
                     })
                     .Select(g => new InterviewDtos.ListOfRounds
                     {
-                        round_number = g.Key.round_number,
-                        interview_round_name = g.Key.interview_round_name,
-                        process_descreption = g.Key.process_descreption,
-                        name = g.FirstOrDefault().scheduled_by_user.name,
-                        interview_date = g.FirstOrDefault().start_time
+                        round_number = g.Key.RoundNumber,
+                        interview_round_name = g.Key.InterviewRoundName,
+                        process_descreption = g.Key.ProcessDescreption,
+                        name = g.FirstOrDefault().ScheduledByUser.Name,
+                        interview_date = g.FirstOrDefault().StartTime
                     })
                     .OrderBy(r => r.round_number)
                     .ToListAsync();
@@ -256,14 +269,14 @@ namespace RecruitmentApi.Services
 
         public async Task<List<SkillDtos.SkillDto>> FetchJobSkills(int job_id)
         {
-            var job = await _context.Jobs.FirstOrDefaultAsync(i => i.job_id == job_id);
+            var job = await _context.Jobs.FirstOrDefaultAsync(i => i.JobId == job_id);
             if (job==null)
                 throw new NullReferenceException("Job does not exist");
 
-            var skills = await _context.Jobs_Skills.Where(j => j.job_id == job_id).Include(j => j.skill).Select(r => new SkillDtos.SkillDto
+            var skills = await _context.Jobs_Skills.Where(j => j.JobId == job_id).Include(j => j.Skill).Select(r => new SkillDtos.SkillDto
             {
-                skill_id = r.skill_id,
-                skill_name = r.skill.SkillName
+                skill_id = r.SkillId,
+                skill_name = r.Skill.SkillName
             }).ToListAsync();
 
             return skills;
@@ -271,19 +284,19 @@ namespace RecruitmentApi.Services
 
         public async Task<List<InterviewDtos.InterviewerInfo>> GetAllInterviewers(int job_id)
         {
-            if (!await _context.Jobs.AnyAsync(j => j.job_id == job_id))
+            if (!await _context.Jobs.AnyAsync(j => j.JobId == job_id))
                 throw new NullReferenceException("Job does not exist");
 
             var interviewers = await _context.Interviews
-                .Where(i => i.job_id == job_id)
-                .SelectMany(i => i.users)
-                .GroupBy(u => new { u.user_id, u.name }) // group by user
+                .Where(i => i.JobId == job_id)
+                .SelectMany(i => i.Users)
+                .GroupBy(u => new { u.UserId, u.Name }) // group by user
                 .Select(g => new InterviewDtos.InterviewerInfo
                 {
-                    user_id = g.Key.user_id,
-                    name = g.Key.name,
-                    role = g.SelectMany(u => u.roles)
-                            .Select(r => r.role_name)
+                    user_id = g.Key.UserId,
+                    name = g.Key.Name,
+                    role = g.SelectMany(u => u.Roles)
+                            .Select(r => r.RoleName)
                             .Distinct()
                             .ToList() // collect all roles per user
                 })
@@ -293,14 +306,28 @@ namespace RecruitmentApi.Services
             return interviewers;
         }
 
-        public async Task UpdateCandidateInterviewStatus(int interview_id, string status)
+        public async Task UpdateCandidateInterviewStatus(int interview_id, string status, string user_id)
         {
-            var interview = await _context.Interviews.FirstOrDefaultAsync(i => i.interview_id == interview_id);
+            var interview = await _context.Interviews.FirstOrDefaultAsync(i => i.InterviewId == interview_id);
             if (interview == null) throw new NullReferenceException("Interview does not exist");
 
             if(!(status == "Selected" || status == "Rejected")) throw new InvalidOperationException("Invalid status");
 
-            interview.status = status;
+            interview.Status = status;
+
+            var interview_title = await _context.Interview_Types.FirstOrDefaultAsync(i => i.InterviewTypeId == interview.InterviewTypeId);
+
+            var status_history = new Candidate_Status_History
+            {
+                Status = status,
+                Reason = $"{status} in Round {interview.RoundNumber}, {interview_title?.InterviewRoundName} round.",
+                ChangedAt = DateTime.Now,
+                CandidateId = interview.CandidateId,
+                JobId = interview.JobId,
+                ChangedBy = user_id,
+            };
+
+            await _context.Candidate_Status_Histories.AddAsync(status_history);
 
             await _context.SaveChangesAsync();
         }
@@ -308,56 +335,56 @@ namespace RecruitmentApi.Services
         public async Task<List<InterviewDtos.ListCandidateSheduleRes>> FetchCandidateInterviewShedule(InterviewDtos.ListCandidateSheduleReq req)
         {
             var jobExists = await _context.Jobs
-                .AnyAsync(j => j.job_id == req.job_id);
+                .AnyAsync(j => j.JobId == req.job_id);
 
             if (!jobExists)
                 throw new NullReferenceException("Job does not exist");
 
-            var user = await _context.Users.AnyAsync(u => u.user_id == req.user_id);
+            var user = await _context.Users.AnyAsync(u => u.UserId == req.user_id);
             if (!user)
                 throw new NullReferenceException("User does not exist");
 
             var schedule = await _context.Interviews
-                .Where(i => i.job_id == req.job_id &&
-                            i.round_number == req.round_number)
+                .Where(i => i.JobId == req.job_id &&
+                            i.RoundNumber == req.round_number)
                 .Select(i => new InterviewDtos.ListCandidateSheduleRes
                 {
-                    interview_id = i.interview_id,
-                    round_number = i.round_number,
-                    location_or_link = i.location_or_link,
-                    candidate_id = i.candidate_id,
-                    job_id = i.job_id,
-                    interview_type_id = i.interview_type_id,
-                    mode = i.mode,
-                    start_time = i.start_time,
-                    end_time = i.end_time,
-                    status = i.status,
+                    interview_id = i.InterviewId,
+                    round_number = i.RoundNumber,
+                    location_or_link = i.LocationOrLink,
+                    candidate_id = i.CandidateId,
+                    job_id = i.JobId,
+                    interview_type_id = i.InterviewTypeId,
+                    mode = i.Mode,
+                    start_time = i.StartTime,
+                    end_time = i.EndTime,
+                    status = i.Status,
                     scheduled_by = req.user_id,
 
                     scheduled_by_user = new InterviewDtos.ScheduleByData
                     {
-                        user_id = i.scheduled_by_user.user_id,
-                        name = i.scheduled_by_user.name
+                        user_id = i.ScheduledByUser.UserId,
+                        name = i.ScheduledByUser.Name
                     },
 
                     candidate = new InterviewDtos.CandidateData
                     {
-                        candidate_id = i.candidate.candidate_id,
-                        full_name = i.candidate.full_name,
-                        email = i.candidate.email
+                        candidate_id = i.Candidate.CandidateId,
+                        full_name = i.Candidate.FullName,
+                        email = i.Candidate.Email
                     },
 
                     interview_type = new InterviewDtos.Interview_TypeData
                     {
-                        interview_type_id = i.interview_type.interview_type_id,
-                        interview_round_name = i.interview_type.interview_round_name,
-                        process_descreption = i.interview_type.process_descreption
+                        interview_type_id = i.InterviewType.InterviewTypeId,
+                        interview_round_name = i.InterviewType.InterviewRoundName,
+                        process_descreption = i.InterviewType.ProcessDescreption
                     },
 
-                    users = i.users.Select(u => new InterviewDtos.UserData
+                    users = i.Users.Select(u => new InterviewDtos.UserData
                     {
-                        user_id = u.user_id,
-                        name = u.name
+                        user_id = u.UserId,
+                        name = u.Name
                     }).ToList()
                 })
                 .ToListAsync();
@@ -371,56 +398,57 @@ namespace RecruitmentApi.Services
         public async Task<List<InterviewDtos.ListCandidateSheduleRes>> FetchCandidateInterviewSheduleByInterviewer(InterviewDtos.ListCandidateSheduleReq req)
         {
             var jobExists = await _context.Jobs
-                .AnyAsync(j => j.job_id == req.job_id);
+                .AnyAsync(j => j.JobId == req.job_id);
 
             if (!jobExists)
                 throw new NullReferenceException("Job does not exist");
 
-            var user = await _context.Users.AnyAsync(u => u.user_id == req.user_id);
+            var user = await _context.Users.AnyAsync(u => u.UserId == req.user_id);
             if (!user)
                 throw new NullReferenceException("User does not exist");
 
             var schedule = await _context.Interviews
-                .Where(i => i.job_id == req.job_id &&
-                            i.round_number == req.round_number && i.users.Any(u => u.user_id == req.user_id))
+                .Where(i => i.JobId == req.job_id &&
+                            i.RoundNumber == req.round_number && i.Users.Any(u => u.UserId == req.user_id))
                 .Select(i => new InterviewDtos.ListCandidateSheduleRes
                 {
-                    interview_id = i.interview_id,
-                    round_number = i.round_number,
-                    location_or_link = i.location_or_link,
-                    candidate_id = i.candidate_id,
-                    job_id = i.job_id,
-                    interview_type_id = i.interview_type_id,
-                    mode = i.mode,
-                    start_time = i.start_time,
-                    end_time = i.end_time,
-                    status = i.status,
+                    interview_id = i.InterviewId,
+                    round_number = i.RoundNumber,
+                    AccessTo = i.AllowFeedback,
+                    location_or_link = i.LocationOrLink,
+                    candidate_id = i.CandidateId,
+                    job_id = i.JobId,
+                    interview_type_id = i.InterviewTypeId,
+                    mode = i.Mode,
+                    start_time = i.StartTime,
+                    end_time = i.EndTime,
+                    status = i.Status,
                     scheduled_by = req.user_id,
 
                     scheduled_by_user = new InterviewDtos.ScheduleByData
                     {
-                        user_id = i.scheduled_by_user.user_id,
-                        name = i.scheduled_by_user.name
+                        user_id = i.ScheduledByUser.UserId,
+                        name = i.ScheduledByUser.Name
                     },
 
                     candidate = new InterviewDtos.CandidateData
                     {
-                        candidate_id = i.candidate.candidate_id,
-                        full_name = i.candidate.full_name,
-                        email = i.candidate.email
+                        candidate_id = i.Candidate.CandidateId,
+                        full_name = i.Candidate.FullName,
+                        email = i.Candidate.Email
                     },
 
                     interview_type = new InterviewDtos.Interview_TypeData
                     {
-                        interview_type_id = i.interview_type.interview_type_id,
-                        interview_round_name = i.interview_type.interview_round_name,
-                        process_descreption = i.interview_type.process_descreption
+                        interview_type_id = i.InterviewType.InterviewTypeId,
+                        interview_round_name = i.InterviewType.InterviewRoundName,
+                        process_descreption = i.InterviewType.ProcessDescreption
                     },
 
-                    users = i.users.Select(u => new InterviewDtos.UserData
+                    users = i.Users.Select(u => new InterviewDtos.UserData
                     {
-                        user_id = u.user_id,
-                        name = u.name
+                        user_id = u.UserId,
+                        name = u.Name
                     }).ToList()
                 })
                 .ToListAsync();
@@ -433,20 +461,20 @@ namespace RecruitmentApi.Services
 
         public async Task<List<CandidateDtos.SelectedCandiadte>> FetchSelectedCandidates(int job_id)
         {
-            if (!await _context.Jobs.AnyAsync(i => i.job_id == job_id))
+            if (!await _context.Jobs.AnyAsync(i => i.JobId == job_id))
                 throw new NullReferenceException("Job does not exist");
 
             var lastRoundNumber = await _context.Interviews
-                .Where(i => i.job_id == job_id)
-                .MaxAsync(i => (int?)i.round_number);
+                .Where(i => i.JobId == job_id)
+                .MaxAsync(i => (int?)i.RoundNumber);
 
-            var candidates = await _context.Interviews.Where(i => i.job_id == job_id && i.status == "Selected" && i.round_number == lastRoundNumber)
+            var candidates = await _context.Interviews.Where(i => i.JobId == job_id && i.Status == "Selected" && i.RoundNumber == lastRoundNumber)
                 .Select(r => new CandidateDtos.SelectedCandiadte
                 {
-                    candidate_id = r.candidate_id,
-                    full_name = r.candidate.full_name,
-                    email = r.candidate.email,
-                    doc_upload = r.candidate.doc_upload
+                    candidate_id = r.CandidateId,
+                    full_name = r.Candidate.FullName,
+                    email = r.Candidate.Email,
+                    doc_upload = r.Candidate.DocUpload
                 }).ToListAsync();
 
             return candidates;
@@ -454,19 +482,19 @@ namespace RecruitmentApi.Services
 
         public async Task<List<JobDtos.ListJobTitle>> CheckCandidateInterviewHistory(int interview_id)
         {
-            var interview = await _context.Interviews.FirstOrDefaultAsync(i => i.interview_id == interview_id);
+            var interview = await _context.Interviews.FirstOrDefaultAsync(i => i.InterviewId == interview_id);
             if (interview == null) throw new NullReferenceException("Interivew does not exist");
 
             var candidateJobs = await _context.Interviews
             .Where(i =>
-                i.candidate_id == interview.candidate_id &&
-                i.job_id != interview.job_id &&
-                i.round_number == 1 &&
-                i.start_time < interview.start_time)
+                i.CandidateId == interview.CandidateId &&
+                i.JobId != interview.JobId &&
+                i.RoundNumber == 1 &&
+                i.StartTime < interview.StartTime)
             .Select(i => new JobDtos.ListJobTitle
             {
-                job_id = i.job_id,
-                job_title = i.job.job_title
+                job_id = i.JobId,
+                job_title = i.Job.JobTitle
             })
             .Distinct()
             .ToListAsync();
@@ -476,46 +504,44 @@ namespace RecruitmentApi.Services
 
         public async Task<InterviewDtos.InterviewSkillsRes> FetchSkillDataForInterview(int interview_id)
         {
-            var interview = await _context.Interviews.FirstOrDefaultAsync(i => i.interview_id == interview_id) ?? throw new NullReferenceException("Interview does not exist");
+            var interview = await _context.Interviews.FirstOrDefaultAsync(i => i.InterviewId == interview_id) ?? throw new NullReferenceException("Interview does not exist");
 
-            var candidateTask = await _context.Candidates.Where(c => c.candidate_id == interview.candidate_id)
+            var candidateTask = await _context.Candidates.Where(c => c.CandidateId == interview.CandidateId)
                 .Select(r => new CandidateDtos.ForInterviewRes
                 {
-                    candidate_id = r.candidate_id,
-                    full_name = r.full_name,
-                    email = r.email,
-                    resume_path = r.resume_path
+                    candidate_id = r.CandidateId,
+                    full_name = r.FullName,
+                    email = r.Email,
+                    resume_path = r.ResumePath
                 }).FirstOrDefaultAsync();
 
             var jobSkillsTask = await _context.Jobs_Skills
-                    .Where(j => j.job_id == interview.job_id)
-                    .Include(i => i.skill)
+                    .Where(j => j.JobId == interview.JobId)
+                    .Include(i => i.Skill)
                     .Select(r => new Jobs_SkillsDtos.InterviewJobSkillRes
                     {
-                        skill_id = r.skill_id,
-                        skill_type = r.skill_type,
+                        skill_id = r.SkillId,
+                        skill_type = r.SkillType,
                         skill = new SkillDtos.SkillDto
                         {
-                            skill_id = r.skill.SkillId,
-                            skill_name = r.skill.SkillName,
+                            skill_id = r.Skill.SkillId,
+                            skill_name = r.Skill.SkillName,
                         }
                     })
                     .ToListAsync();
 
-            Console.WriteLine(jobSkillsTask.ToString());
-
             var candidateSkillsTask = await _context.Candidate_Skills
-                .Where(c => c.candidate_id == interview.candidate_id)
+                .Where(c => c.CandidateId == interview.CandidateId)
                 .Select(r => new Candidate_SkillDtos.Candidate_SkillDto
                 {
-                    candidate_skill_id = r.candidate_skill_id,
-                    candidate_id = r.candidate_id,
-                    years_experience = r.years_experience,
-                    skill_id = r.skill_id,
+                    candidate_skill_id = r.CandidateSkillId,
+                    candidate_id = r.CandidateId,
+                    years_experience = r.YearsExperience,
+                    skill_id = r.SkillId,
                     skill = new SkillDtos.SkillDto
                     {
-                        skill_id = r.skill.SkillId,
-                        skill_name = r.skill.SkillName
+                        skill_id = r.Skill.SkillId,
+                        skill_name = r.Skill.SkillName
                     }
                 })
                 .ToListAsync();
@@ -533,66 +559,80 @@ namespace RecruitmentApi.Services
             if (req.location_or_link.IsNullOrEmpty() || req.mode.IsNullOrEmpty() || req.status.IsNullOrEmpty())
                 throw new ArgumentNullException("Invalid input");
 
-            var interview = await _context.Interviews.Include(u => u.users).FirstOrDefaultAsync(i => i.interview_id == req.interview_id) ?? throw new NullReferenceException("Interview not found");
+            var interview = await _context.Interviews.Include(u => u.Users).FirstOrDefaultAsync(i => i.InterviewId == req.interview_id) ?? throw new NullReferenceException("Interview not found");
 
-            interview.location_or_link = req.location_or_link;
-            interview.mode = req.mode;
-            interview.status = req.status;
-            interview.scheduled_by = req.user_id;
+            interview.LocationOrLink = req.location_or_link;
+            interview.Mode = req.mode;
+            interview.Status = req.status;
+            interview.ScheduledBy = req.user_id;
 
-            interview.users.Clear();
+            interview.Users.Clear();
 
-            interview.users = await _context.Users.Where(u => req.users.Contains(u.user_id)).ToListAsync();
+            interview.Users = await _context.Users.Where(u => req.users.Contains(u.UserId)).ToListAsync();
+
+            var interview_title = await _context.Interview_Types.FirstOrDefaultAsync(i => i.InterviewTypeId == interview.InterviewTypeId);
+
+            var status_history = new Candidate_Status_History
+            {
+                Status = req.status,
+                Reason = $"{req.status} in Round {interview.RoundNumber}, {interview_title?.InterviewRoundName} round.",
+                ChangedAt = DateTime.Now,
+                CandidateId = interview.CandidateId,
+                JobId = interview.JobId,
+                ChangedBy = req.user_id,
+            };
+
+            await _context.Candidate_Status_Histories.AddAsync(status_history);
 
             await _context.SaveChangesAsync();
 
             return req;
         }
 
-        public async Task<List<InterviewDtos.ListCandidateSheduleRes>?> FetchCandidateInterview(InterviewDtos.CandidateInterviewReq req)
+        public async Task<List<InterviewDtos.ListCandidateSheduleRes>?> FetchCandidateInterview(int job_id, string candidate_id)
         {
-            if (req.candidate_id.IsNullOrEmpty()) throw new ArgumentNullException("Invalud input");
+            if (candidate_id.IsNullOrEmpty()) throw new ArgumentNullException("Invalud input");
 
-            var job = await _context.Jobs.AnyAsync(j => j.job_id == req.job_id);
+            var job = await _context.Jobs.AnyAsync(j => j.JobId == job_id);
             if(!job)
                 throw new NullReferenceException("Job does not exist");
-            var candidate = await _context.Candidates.AnyAsync(c => c.candidate_id == req.candidate_id);
+            var candidate = await _context.Candidates.AnyAsync(c => c.CandidateId == candidate_id);
             if (!candidate)
                 throw new NullReferenceException("Candidate does not exist");
 
             var schedule = await _context.Interviews
-               .Where(i => i.job_id == req.job_id &&
-                           i.candidate_id == req.candidate_id)
+               .Where(i => i.JobId == job_id &&
+                           i.CandidateId == candidate_id)
                .Select(i => new InterviewDtos.ListCandidateSheduleRes
                {
-                   interview_id = i.interview_id,
-                   round_number = i.round_number,
-                   location_or_link = i.location_or_link,
-                   candidate_id = i.candidate_id,
-                   job_id = i.job_id,
-                   interview_type_id = i.interview_type_id,
-                   mode = i.mode,
-                   start_time = i.start_time,
-                   end_time = i.end_time,
-                   status = i.status,
+                   interview_id = i.InterviewId,
+                   round_number = i.RoundNumber,
+                   location_or_link = i.LocationOrLink,
+                   candidate_id = i.CandidateId,
+                   job_id = i.JobId,
+                   interview_type_id = i.InterviewTypeId,
+                   mode = i.Mode,
+                   start_time = i.StartTime,
+                   end_time = i.EndTime,
+                   status = i.Status,
 
                    candidate = new InterviewDtos.CandidateData
                    {
-                       candidate_id = i.candidate.candidate_id,
-                       full_name = i.candidate.full_name
+                       candidate_id = i.Candidate.CandidateId,
+                       full_name = i.Candidate.FullName
                    },
 
                    interview_type = new InterviewDtos.Interview_TypeData
                    {
-                       interview_type_id = i.interview_type.interview_type_id,
-                       interview_round_name = i.interview_type.interview_round_name,
-                       process_descreption = i.interview_type.process_descreption
+                       interview_type_id = i.InterviewType.InterviewTypeId,
+                       interview_round_name = i.InterviewType.InterviewRoundName,
+                       process_descreption = i.InterviewType.ProcessDescreption
                    },
 
-                   users = i.users.Select(u => new InterviewDtos.UserData
+                   users = i.Users.Select(u => new InterviewDtos.UserData
                    {
-                       user_id = u.user_id,
-                       name = u.name
+                       user_id = u.UserId,
+                       name = u.Name
                    }).ToList()
                })
                .ToListAsync();
@@ -606,13 +646,13 @@ namespace RecruitmentApi.Services
         public async Task<Boolean> DeleteCandidateInterview(int interview_id)
         {
             var interview = await _context.Interviews
-               .Include(i => i.users)
-               .FirstOrDefaultAsync(i => i.interview_id == interview_id);
+               .Include(i => i.Users)
+               .FirstOrDefaultAsync(i => i.InterviewId == interview_id);
 
             if (interview == null)
                 throw new NullReferenceException("Interview Schedule not found");
 
-            interview.users.Clear();
+            interview.Users.Clear();
 
             _context.Interviews.Remove(interview);
             await _context.SaveChangesAsync();
@@ -623,12 +663,12 @@ namespace RecruitmentApi.Services
         public async Task<bool> DeleteInterviewSchedule(InterviewDtos.DeleteSheduleReq req)
         {
 
-            var job = await _context.Jobs.FirstOrDefaultAsync(j => j.job_id == req.job_id) ?? throw new NullReferenceException("Job does not exist");
+            var job = await _context.Jobs.FirstOrDefaultAsync(j => j.JobId == req.job_id) ?? throw new NullReferenceException("Job does not exist");
 
             var interviews = await _context.Interviews
-                .Include(i => i.users)
-                .Include(i => i.Interview_Feedbacks)
-                .Where(i => i.job_id == req.job_id && i.round_number == req.round_number)
+                .Include(i => i.Users)
+                .Include(i => i.InterviewFeedbacks)
+                .Where(i => i.JobId == req.job_id && i.RoundNumber == req.round_number)
                 .ToListAsync();
 
             if (!interviews.Any())
@@ -638,11 +678,11 @@ namespace RecruitmentApi.Services
             await _context.SaveChangesAsync();
 
             var remainingRounds = await _context.Interviews
-                .AnyAsync(i => i.job_id == req.job_id);
+                .AnyAsync(i => i.JobId == req.job_id);
 
             if (!remainingRounds)
             {
-                job.scheduled = "Pending";
+                job.Scheduled = "Pending";
                 await _context.SaveChangesAsync();
             }
 

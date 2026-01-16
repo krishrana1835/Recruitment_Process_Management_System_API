@@ -5,25 +5,25 @@ namespace RecruitmentApi.Models;
 
 public partial class Interview_Feedback
 {
-    public int feedback_id { get; set; }
+    public int FeedbackId { get; set; }
 
-    public int concept_rating { get; set; }
+    public int ConceptRating { get; set; }
 
-    public int technical_rating { get; set; }
+    public int TechnicalRating { get; set; }
 
-    public string comments { get; set; } = null!;
+    public string Comments { get; set; } = null!;
 
-    public DateTime feedback_at { get; set; }
+    public DateTime FeedbackAt { get; set; }
 
-    public int interview_id { get; set; }
+    public int InterviewId { get; set; }
 
-    public string user_id { get; set; } = null!;
+    public string UserId { get; set; } = null!;
 
-    public int candidate_skill_id { get; set; }
+    public int CandidateSkillId { get; set; }
 
-    public virtual Interview interview { get; set; } = null!;
+    public virtual Interview Interview { get; set; } = null!;
 
-    public virtual Candidate_Skill candidate_skill { get; set; } = null!;
+    public virtual Candidate_Skill CandidateSkill { get; set; } = null!;
 
-    public virtual User user { get; set; } = null!;
+    public virtual User User { get; set; } = null!;
 }
