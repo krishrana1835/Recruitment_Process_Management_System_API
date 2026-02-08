@@ -122,6 +122,9 @@ namespace RecruitmentApi.Services
             if (dto.candidate_id.IsNullOrEmpty())
                 throw new ArgumentException("Invalid Candidate Id");
 
+            if (await _context.Employee_Records.AnyAsync(c => c.CandidateId == dto.candidate_id))
+                throw new InvalidOperationException("Candidate is already an employee");
+
             var candidate = await _context.Candidates.FirstOrDefaultAsync(r => r.CandidateId == dto.candidate_id);
             if (candidate == null)
                 throw new Exception("Candidate not found");

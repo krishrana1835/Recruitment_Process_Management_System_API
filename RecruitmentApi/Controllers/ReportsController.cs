@@ -20,7 +20,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("interview-summary")]
-        [Authorize(Roles = "Admin, HR")]
+        [Authorize(Roles = "Admin, HR, Viewer")]
         public async Task<IActionResult> GetInterviewSummary([FromBody] ReportsDtos.InterviewSummaryRequest request)
         {
             if (string.IsNullOrEmpty(request.UserId))
@@ -50,6 +50,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("TechWiseProfiles")]
+        [Authorize(Roles = "Admin, Reviewer, Interviewer, HR, Viewer")]
         public async Task<IActionResult> GetTechWiseProfiles(ReportsDtos.TechReq request)
         {
             try
@@ -74,6 +75,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpPost("ExperienceWiseProfiles")]
+        [Authorize(Roles = "Admin, Reviewer , HR, Viewer, Interviewer, Recruiter")]
         public async Task<IActionResult> GetExperienceWiseReport(ReportsDtos.ExpirienceReq request)
         {
             try
@@ -98,6 +100,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("daily-summary")]
+        [Authorize(Roles = "Admin, HR, Viewer")]
         public async Task<IActionResult> GetDailySummary([FromQuery] DateTime date)
         {
             try
@@ -121,6 +124,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("candidate-summary")]
+        [Authorize(Roles = "Admin, HR, Recruiter, Viewer")]
         public async Task<IActionResult> GetCandidateSummary([FromQuery] string CandidateId)
         {
             try

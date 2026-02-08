@@ -139,6 +139,10 @@ namespace RecruitmentApi.Controllers
                 var response = await _service.ApplyForJobAsync(dto);
                 return Ok(new { message = "Application registerd" });
             }
+            catch(InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
                 return Problem(ex.Message);

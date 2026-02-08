@@ -32,12 +32,28 @@
             public string OfferLetterPath { get; set; } = null!;
             public CandidateDtos.CandidateDto Candidate { get; set; } = new();
         }
-
         public class EmployeeUpdateDto
         {
             public int EmployeeId { get; set; }
             public DateOnly JoiningDate { get; set; }
             public string OfferLetterPath { get; set; } = null!;
+        }
+        public class OfferLatterCandidate
+        {
+            public int EmployeeId { get; set; }
+
+            public DateOnly JoiningDate { get; set; }
+
+            public string OfferLetterPath { get; set; } = null!;
+
+            public DisplayJob Job { get; set; } = null!;
+        }
+
+        public class DisplayJob
+        {
+            public int JobId { get; set; }
+            public string JobTitle { get; set; } = null!;
+            public string JobDescription { get; set; } = null!;
         }
     }
 }

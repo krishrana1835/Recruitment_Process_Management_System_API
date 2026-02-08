@@ -62,7 +62,7 @@ namespace RecruitmentApi.Controllers
         }
 
         [HttpGet("GetAllJobs")]
-        [Authorize(Roles = "Admin, HR")]
+        [Authorize(Roles = "Admin, HR, Viewer, Recruiter, Reviewer, Interviewer")]
         public async Task<IActionResult> GetAllJobs([FromQuery] bool sorted)
         {
             try

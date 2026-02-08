@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.CodeDom;
+using Microsoft.EntityFrameworkCore;
 using RecruitmentApi.Data;
 using RecruitmentApi.Dtos;
 using RecruitmentApi.Models;
@@ -92,6 +93,29 @@ namespace RecruitmentApi.Services
                         email = s.Candidate.Email,
                     }
                 }).ToListAsync();
+        }
+
+        public async Task<Boolean> IsEmployeeAsync (string CandidateId)
+        {
+            return await _context.Employee_Records.AnyAsync(c => c.CandidateId == CandidateId);
+        }
+
+        public async Task<Employee_RecordDtos.OfferLatterCandidate> FetchOfferLatterAsync(string CandidateId)
+        {
+            return await _context.Employee_Records.Where(c => c.CandidateId == CandidateId)
+                .Select(s => new Employee_RecordDtos.OfferLatterCandidate
+                {
+                    EmployeeId = s.EmployeeId,
+                    JoiningDate= s.JoiningDate,
+                    OfferLetterPath = s.OfferLetterPath,
+                    Job = new Employee_RecordDtos.DisplayJob
+                    {
+                        JobId = s.JobId,
+                        JobTitle = s.Job.JobTitle,
+                        JobDescription = s.Job.JobDescription,
+                    }
+                }).FirstOrDefaultAsync()
+                ?? throw new KeyNotFoundException("Candidate is not an employee");
         }
 
         public async Task UpdateEmployeeAsync(Employee_RecordDtos.EmployeeUpdateDto req)

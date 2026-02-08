@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.BouncyCastle.Ocsp;
@@ -56,6 +57,65 @@ namespace RecruitmentApi.Controllers
                     success = false,
                     message = "An error occured while adding employee",
                     error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("IsEmployee")]
+        [Authorize(Roles = "Candidate")]
+        public async Task<IActionResult> IsCandidateEmployee([FromQuery]string CandidateId)
+        {
+            try
+            {
+                var res = await _service.IsEmployeeAsync(CandidateId);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Employee status fetched successfully",
+                    data = res
+                });
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An Error occured while checking candidate's employee statuss",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("GetOfferlatter")]
+        [Authorize(Roles = "Candidate")]
+        public async Task<IActionResult> OfferLatter([FromQuery] string CandidateId)
+        {
+            try
+            {
+                var res = await _service.FetchOfferLatterAsync(CandidateId);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Offer Latter and date fetched successfully",
+                    data = res
+                });
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = ex.Message,
+                    error = ex.Message,
+                });
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occured while fetching offer latter and date",
+                    error = ex.Message,
                 });
             }
         }
